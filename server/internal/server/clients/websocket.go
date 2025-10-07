@@ -53,6 +53,8 @@ func (c *WebSocketClient) Initialize(id uint64) {
 }
 
 func (c *WebSocketClient) ProcessMessage(senderId uint64, message packets.Msg) {
+	c.logger.Printf("Received message: %T from client - echoing back...", message)
+	c.SocketSend(message)
 
 }
 
