@@ -46,6 +46,7 @@ func (s *SharedCollection[T]) Remove(id uint64) {
 	delete(s.objectsMap, id)
 }
 
+// Call the callback function for each object
 func (s *SharedCollection[T]) ForEach(callback func(uint64, T)) {
 	s.mapMux.Lock()
 	localCopy := make(map[uint64]T, len(s.objectsMap))
@@ -65,6 +66,7 @@ func (s *SharedCollection[T]) Get(id uint64) (T, bool) {
 	return obj, ok
 }
 
+// Get approximate number of objects. Don't lock the map to save performance.
 func (s *SharedCollection[T]) Len() int {
 	return len(s.objectsMap)
 }
