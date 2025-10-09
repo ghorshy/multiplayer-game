@@ -44,7 +44,7 @@ func NewWebSocketClient(hub *server.Hub, writer http.ResponseWriter, request *ht
 }
 
 func (c *WebSocketClient) Id() uint64 {
-	return c.Id()
+	return c.id
 }
 
 func (c *WebSocketClient) Initialize(id uint64) {
