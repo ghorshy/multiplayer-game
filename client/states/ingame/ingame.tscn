@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://c52e2u005l1gn"]
+
+[ext_resource type="Script" uid="uid://7ihqmgm4apmi" path="res://states/ingame/ingame.gd" id="1_b7vyf"]
+
+[node name="InGame" type="Node"]
+script = ExtResource("1_b7vyf")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="LineEdit" type="LineEdit" parent="UI"]
+offset_right = 68.5625
+offset_bottom = 31.0
