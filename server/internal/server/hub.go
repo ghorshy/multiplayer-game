@@ -15,6 +15,8 @@ type ClientInterfacer interface {
 	// Sets client ID and anything else
 	Initialize(id uint64)
 
+	SetState(newState ClientStateHandler)
+
 	// Puts data from this client to the write pump
 	SocketSend(message packets.Msg)
 
@@ -48,6 +50,18 @@ type Hub struct {
 
 	// Clients in this channel will be unregistered with the hub
 	UnregisterChan chan ClientInterfacer
+}
+
+// State machine to process the client's messages
+type ClientStateHandler interface {
+	Name() string
+
+	SetClient(client ClientInterfacer)
+
+	OnEnter()
+	HandleMessage(senderId uint64, message packets.Msg)
+
+	OnExit()
 }
 
 func NewHub() *Hub {
