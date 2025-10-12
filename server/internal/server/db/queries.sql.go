@@ -20,7 +20,7 @@ RETURNING id, username, password_hash
 
 type CreateUserParams struct {
 	Username     string
-	PasswordHash interface{}
+	PasswordHash string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
