@@ -6,8 +6,8 @@ enum State {
 }
 
 var states_scenes: Dictionary[State, String] = {
-	State.ENTERED: "",
-	State.INGAME: ""
+	State.ENTERED: "uid://5dlg2fm2yyb2",
+	State.INGAME: "uid://c52e2u005l1gn"
 }
 
 var client_id: int
