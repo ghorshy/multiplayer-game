@@ -61,6 +61,10 @@ func (c *WebSocketClient) DbTx() *server.DbTx {
 	return c.dbTx
 }
 
+func (c *WebSocketClient) SharedGameObjects() *server.SharedGameObjects {
+	return c.hub.SharedGameObjects
+}
+
 func (c *WebSocketClient) ProcessMessage(senderId uint64, message packets.Msg) {
 	c.state.HandleMessage(senderId, message)
 }
