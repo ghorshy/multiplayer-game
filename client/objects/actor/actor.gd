@@ -33,6 +33,17 @@ static func instantiate(actor_id: int, actor_name: String, x: float, y: float, r
 	return actor
 
 
+func _input(event: InputEvent) -> void:
+	if is_player and event is InputEventMouseButton and event.is_pressed():
+		match event.button_index:
+			MOUSE_BUTTON_WHEEL_UP:
+				camera_2d.zoom.x = min(4, camera_2d.zoom.x + 0.1)
+			MOUSE_BUTTON_WHEEL_DOWN:
+				camera_2d.zoom.x = max(0.1, camera_2d.zoom.x - 0.1)
+				
+		camera_2d.zoom.y = camera_2d.zoom.x
+
+
 func _ready() -> void:
 	position.x = start_x
 	position.y = start_y

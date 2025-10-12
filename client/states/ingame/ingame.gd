@@ -7,6 +7,8 @@ const Actor := preload("uid://ddhml87n8qfci")
 @onready var _log: Log = $UI/Log
 @onready var world: Node2D = $World
 
+var _players: Dictionary[int, Actor]
+
 
 func _ready() -> void:
 	WS.connection_closed.connect(_on_ws_connection_closed)
@@ -41,8 +43,16 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 	
 	var is_player := actor_id == GameManager.client_id
 	
-	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
-	world.add_child(actor)
+	if actor_id not in _players:
+		# New player, create new actor
+		var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
+		world.add_child(actor)
+		_players[actor_id] = actor
+	else:
+		# Existing player, update their position
+		var actor := _players[actor_id]
+		actor.position.x = x
+		actor.position.y = y
 
 
 func _on_line_edit_text_entered(text: String) -> void:
