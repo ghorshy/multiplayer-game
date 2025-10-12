@@ -1,11 +1,35 @@
 package server
 
 import (
+	"context"
+	"database/sql"
+	_ "embed"
 	"log"
 	"net/http"
+	"server/internal/server/db"
 	"server/internal/server/objects"
 	"server/pkg/packets"
+
+	_ "modernc.org/sqlite"
 )
+
+// Embed the database schema
+//
+//go:embed db/config/schema.sql
+var schemaGenSql string
+
+// Struct for database transaction context
+type DbTx struct {
+	Ctx     context.Context
+	Queries *db.Queries
+}
+
+func (h *Hub) NewDbTx() *DbTx {
+	return &DbTx{
+		Ctx:     context.Background(),
+		Queries: db.New(h.dbPool),
+	}
+}
 
 // Structure for connected client to interface with the hub
 type ClientInterfacer interface {
@@ -37,6 +61,8 @@ type ClientInterfacer interface {
 
 	// Close the client's connections and cleanup
 	Close(reason string)
+
+	DbTx() *DbTx
 }
 
 type Hub struct {
@@ -50,6 +76,9 @@ type Hub struct {
 
 	// Clients in this channel will be unregistered with the hub
 	UnregisterChan chan ClientInterfacer
+
+	// Database connection pool
+	dbPool *sql.DB
 }
 
 // State machine to process the client's messages
@@ -65,15 +94,26 @@ type ClientStateHandler interface {
 }
 
 func NewHub() *Hub {
+	dbPool, err := sql.Open("sqlite", "db.sqlite")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &Hub{
 		Clients:        objects.NewSharedCollection[ClientInterfacer](),
 		BroadcastChan:  make(chan *packets.Packet),
 		RegisterChan:   make(chan ClientInterfacer),
 		UnregisterChan: make(chan ClientInterfacer),
+		dbPool:         dbPool,
 	}
 }
 
 func (h *Hub) Run() {
+	log.Println("Initializing database...")
+	if _, err := h.dbPool.ExecContext(context.Background(), schemaGenSql); err != nil {
+		log.Fatal(err)
+	}
+
 	log.Println("Awaiting client registrations")
 	for {
 		select {
