@@ -55,6 +55,9 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 		var actor := _players[actor_id]
 		actor.position.x = x
 		actor.position.y = y
+		
+		var direction := player_msg.get_direction()
+		actor.velocity = speed * Vector2.from_angle(direction)
 
 
 func _on_line_edit_text_entered(text: String) -> void:
