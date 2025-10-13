@@ -64,7 +64,7 @@ func _physics_process(delta: float) -> void:
 	var mouse_pos := get_global_mouse_position()
 	
 	var input_vec := position.direction_to(mouse_pos).normalized()
-	if abs(velocity.angle_to(input_vec)) > TAU / 15: # 24 degrees
+	if abs(velocity.angle_to(input_vec)) > TAU / 30: # 12 degrees
 		velocity = input_vec * speed
 		var packet := packets.Packet.new()
 		var player_direction_message := packet.new_player_direction()

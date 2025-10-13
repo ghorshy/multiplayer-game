@@ -66,6 +66,13 @@ func (g *InGame) OnEnter() {
 	g.player.Radius = 20.0
 
 	g.client.SocketSend(packets.NewPlayer(g.client.Id(), g.player))
+
+	go func() {
+		g.client.SharedGameObjects().Spores.ForEach(func(sporeId uint64, spore *objects.Spore) {
+			time.Sleep(5 * time.Millisecond)
+			g.client.SocketSend(packets.NewSpore(sporeId, spore))
+		})
+	}()
 }
 
 func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
@@ -76,6 +83,8 @@ func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 		g.handleChat(senderId, message)
 	case *packets.Packet_PlayerDirection:
 		g.handlePlayerDirection(senderId, message)
+	case *packets.Packet_SporeConsumed:
+		g.logger.Printf("Spore %d consumed by client %d", message.SporeConsumed.SporeId, senderId)
 	}
 }
 
