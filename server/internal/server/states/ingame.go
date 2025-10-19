@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"server/internal/server"
 	"server/internal/server/objects"
 	"server/pkg/packets"
@@ -96,8 +95,7 @@ func (g *InGame) OnEnter() {
 	g.logger.Printf("Adding player %s to the shared collection", g.player.Name)
 	go g.client.SharedGameObjects().Players.Add(g.player, g.client.Id())
 
-	g.player.X = rand.Float64() * 1000
-	g.player.Y = rand.Float64() * 1000
+	g.player.X, g.player.Y = objects.SpawnCoords(g.player.Radius, g.client.SharedGameObjects().Players, nil)
 	g.player.Speed = 150.0
 	g.player.Radius = 20.0
 
@@ -111,6 +109,14 @@ func (g *InGame) OnEnter() {
 	}()
 }
 
+func (g *InGame) OnExit() {
+	if g.cancelPlayerUpdateLoop != nil {
+		g.cancelPlayerUpdateLoop()
+	}
+
+	g.client.SharedGameObjects().Players.Remove(g.client.Id())
+}
+
 func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 	switch message := message.(type) {
 	case *packets.Packet_Player:
@@ -121,6 +127,8 @@ func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 		g.handlePlayerDirection(senderId, message)
 	case *packets.Packet_SporeConsumed:
 		g.handleSporeConsumed(senderId, message)
+	case *packets.Packet_PlayerConsumed:
+		g.handlePlayerConsumed(senderId, message)
 	}
 }
 
@@ -181,10 +189,56 @@ func (g *InGame) handleSporeConsumed(senderId uint64, message *packets.Packet_Sp
 	g.client.Broadcast(message)
 }
 
-func (g *InGame) OnExit() {
-	if g.cancelPlayerUpdateLoop != nil {
-		g.cancelPlayerUpdateLoop()
+func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_PlayerConsumed) {
+	if senderId != g.client.Id() {
+		g.client.SocketSendAs(message, senderId)
+
+		if message.PlayerConsumed.PlayerId == g.client.Id() {
+			log.Println("Player was consumed, respawning")
+			g.client.SetState(&InGame{
+				player: &objects.Player{
+					Name: g.player.Name,
+				},
+			})
+		}
+
+		return
 	}
 
-	g.client.SharedGameObjects().Players.Remove(g.client.Id())
+	errMsg := "Could not verify player consumption: "
+
+	otherId := message.PlayerConsumed.PlayerId
+	other, err := g.getOtherPlayer(otherId)
+	if err != nil {
+		g.logger.Println(errMsg + err.Error())
+		return
+	}
+
+	ourMass := radToMass(g.player.Radius)
+	otherMass := radToMass(other.Radius)
+	if ourMass <= otherMass*1.5 {
+		g.logger.Printf(errMsg+"player not massive enough to consume the other player (our radius: %f, other radius: %f)", g.player.Radius, other.Radius)
+		return
+	}
+
+	err = g.validatePlayerCloseToObject(other.X, other.Y, other.Radius, 10)
+	if err != nil {
+		g.logger.Println(errMsg + err.Error())
+		return
+	}
+
+	g.player.Radius = g.nextRadius(otherMass)
+
+	go g.client.SharedGameObjects().Players.Remove(otherId)
+
+	g.client.Broadcast(message)
+}
+
+func (g *InGame) getOtherPlayer(otherId uint64) (*objects.Player, error) {
+	other, exists := g.client.SharedGameObjects().Players.Get(otherId)
+	if !exists {
+		return nil, fmt.Errorf("player with ID %d does not exist", otherId)
+	}
+
+	return other, nil
 }

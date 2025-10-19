@@ -16,7 +16,7 @@ import (
 
 func (h *Hub) newSpore() *objects.Spore {
 	sporeRadius := max(rand.NormFloat64()*3+10, 5)
-	x, y := objects.SpawnCoords()
+	x, y := objects.SpawnCoords(sporeRadius, h.SharedGameObjects.Players, h.SharedGameObjects.Spores)
 	return &objects.Spore{X: x, Y: y, Radius: sporeRadius}
 }
 
@@ -136,10 +136,9 @@ func (h *Hub) Run() {
 		log.Fatal(err)
 	}
 
-	log.Println("Placing spores...")
-	for range MaxSpores {
-		h.SharedGameObjects.Spores.Add(h.newSpore())
-	}
+	// log.Println("Placing spores...")
+	// 	h.SharedGameObjects.Spores.Add(h.newSpore())
+	// }
 
 	log.Println("Awaiting client registrations")
 	for {
