@@ -129,6 +129,8 @@ func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 		g.handleSporeConsumed(senderId, message)
 	case *packets.Packet_PlayerConsumed:
 		g.handlePlayerConsumed(senderId, message)
+	case *packets.Packet_Spore:
+		g.handleSpore(senderId, message)
 	}
 }
 
@@ -232,6 +234,10 @@ func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_P
 	go g.client.SharedGameObjects().Players.Remove(otherId)
 
 	g.client.Broadcast(message)
+}
+
+func (g *InGame) handleSpore(senderId uint64, message *packets.Packet_Spore) {
+	g.client.SocketSendAs(message, senderId)
 }
 
 func (g *InGame) getOtherPlayer(otherId uint64) (*objects.Player, error) {
