@@ -31,6 +31,8 @@ func _on_ws_packet_received(packet: packets.Packet) -> void:
 		_handle_player_msg(sender_id, packet.get_player())
 	elif packet.has_spore():
 		_handle_spore_msg(sender_id, packet.get_spore())
+	elif packet.has_spores_batch():
+		_handle_spores_batch_msg(sender_id, packet.get_spores_batch())
 	elif packet.has_spore_consumed():
 		_handle_spore_consumed_msg(sender_id, packet.get_spore_consumed())
 
@@ -129,6 +131,11 @@ func _remove_spore(spore: Spore) -> void:
 	_spores.erase(spore.spore_id)
 	spore.queue_free()
 	
+	
+func _handle_spores_batch_msg(sender_id: int, spores_batch_msg: packets.SporesBatchMessage) -> void:
+	for spore_msg in spores_batch_msg.get_spores():
+		_handle_spore_msg(sender_id, spore_msg)
+
 	
 func _on_line_edit_text_entered(text: String) -> void:
 	var packet := packets.Packet.new()
