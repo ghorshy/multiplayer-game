@@ -4,8 +4,9 @@ const packets := preload("uid://gf6c1u38lbn0")
 const Actor := preload("uid://ddhml87n8qfci")
 const Spore := preload("uid://dichmp4fpj04i")
 
-@onready var _line_edit: LineEdit = $UI/LineEdit
-@onready var _log: Log = $UI/Log
+@onready var _line_edit: LineEdit = %LineEdit
+@onready var hiscores: Hiscores = %Hiscores
+@onready var _log: Log = %Log
 @onready var world: Node2D = $World
 
 var _players: Dictionary[int, Actor]
@@ -64,6 +65,7 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 func _add_actor(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, is_player: bool) -> void:
 	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
 	world.add_child(actor)
+	_set_actor_mass(actor, _rad_to_mass(radius))
 	_players[actor_id] = actor
 	
 	if is_player:
@@ -72,6 +74,7 @@ func _add_actor(actor_id: int, actor_name: String, x: float, y: float, radius: f
 		
 func _update_actor(actor_id: int, x: float, y: float, direction: float, speed: float, radius: float, is_player: bool) -> void:
 	var actor := _players[actor_id]
+	_set_actor_mass(actor, _rad_to_mass(radius))
 	actor.radius = radius
 
 	if actor.position.distance_squared_to(Vector2(x, y)) > 100:
@@ -112,6 +115,7 @@ func _rad_to_mass(radius: float) -> float:
 	
 func _set_actor_mass(actor: Actor, new_mass: float) -> void:
 	actor.radius = sqrt(new_mass / PI)
+	hiscores.set_hiscore(actor.actor_name, roundi(new_mass))
 
 		
 func _consume_spore(spore: Spore) -> void:
@@ -182,3 +186,4 @@ func _consume_actor(actor: Actor) -> void:
 func _remove_actor(actor: Actor) -> void:
 	_players.erase(actor.actor_id)
 	actor.queue_free()
+	hiscores.remove_hiscore(actor.actor_name)
