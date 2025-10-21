@@ -9,3 +9,11 @@ INSERT INTO users (
   ?, ?
 )
 RETURNING *;
+
+-- name: CreatePlayer :one
+INSERT INTO players (
+  user_id, name
+) VALUES (
+  ?, ?
+)
+RETURNING *;

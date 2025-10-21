@@ -129,6 +129,17 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 		return
 	}
 
+	_, err = c.queries.CreatePlayer(c.dbCtx, db.CreatePlayerParams{
+		UserID: user.ID,
+		Name:   message.RegisterRequest.Username,
+	})
+
+	if err != nil {
+		c.logger.Printf("Failed to create player for user %s: %v", username, err)
+		c.client.SocketSend(genericFailMessage)
+		return
+	}
+
 	c.client.SocketSend(packets.NewOkResponse())
 
 	c.logger.Printf("User %s registered successfully", username)

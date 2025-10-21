@@ -9,6 +9,32 @@ import (
 	"context"
 )
 
+const createPlayer = `-- name: CreatePlayer :one
+INSERT INTO players (
+  user_id, name
+) VALUES (
+  ?, ?
+)
+RETURNING id, user_id, name, best_score
+`
+
+type CreatePlayerParams struct {
+	UserID int64
+	Name   string
+}
+
+func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {
+	row := q.db.QueryRowContext(ctx, createPlayer, arg.UserID, arg.Name)
+	var i Player
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.BestScore,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, password_hash
