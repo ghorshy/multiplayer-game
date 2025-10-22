@@ -118,7 +118,7 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 		return
 	}
 
-	_, err = c.queries.CreateUser(c.dbCtx, db.CreateUserParams{
+	user, err := c.queries.CreateUser(c.dbCtx, db.CreateUserParams{
 		Username:     username,
 		PasswordHash: string(passwordHash),
 	})
