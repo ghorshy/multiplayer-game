@@ -17,3 +17,12 @@ INSERT INTO players (
   ?, ?
 )
 RETURNING *;
+
+-- name: GetPlayerByUserID :one
+SELECT * FROM players
+WHERE user_id = ? LIMIT 1;
+
+-- name: UpdatePlayerBestScore :exec
+UPDATE players
+SET best_score = ?
+WHERE id = ?;

@@ -84,6 +84,22 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
 			Name: username,
 		},
 	})
+
+	player, err := c.queries.GetPlayerByUserID(c.dbCtx, user.ID)
+
+	if err != nil {
+		c.logger.Printf("Error getting player for user %s: %v", username, err)
+		c.client.SocketSend(genericFallMessage)
+		return
+	}
+
+	c.client.SetState(&InGame{
+		player: &objects.Player{
+			Name:      player.Name,
+			DbId:      player.ID,
+			BestScore: player.BestScore,
+		},
+	})
 }
 
 func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Packet_RegisterRequest) {
