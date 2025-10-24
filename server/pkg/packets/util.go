@@ -82,3 +82,11 @@ func NewHiscoreBoard(hiscores []*HiscoreMessage) Msg {
 		},
 	}
 }
+
+func NewDisconnect(reason string) Msg {
+	return &Packet_Disconnect{
+		Disconnect: &DisconnectMessage{
+			Reason: reason,
+		},
+	}
+}

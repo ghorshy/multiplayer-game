@@ -4,7 +4,9 @@ const packets := preload("uid://gf6c1u38lbn0")
 const Actor := preload("uid://ddhml87n8qfci")
 const Spore := preload("uid://dichmp4fpj04i")
 
+@onready var logout_button: Button = %LogoutButton
 @onready var _line_edit: LineEdit = %LineEdit
+@onready var send_button: Button = %SendButton
 @onready var hiscores: Hiscores = %Hiscores
 @onready var _log: Log = %Log
 @onready var world: Node2D = $World
@@ -18,6 +20,8 @@ func _ready() -> void:
 	WS.packet_received.connect(_on_ws_packet_received)
 
 	_line_edit.text_submitted.connect(_on_line_edit_text_entered)
+	logout_button.pressed.connect(_on_logout_button_pressed)
+	send_button.pressed.connect(_on_send_button_pressed)
 
 
 func _on_ws_connection_closed() -> void:
@@ -36,6 +40,8 @@ func _on_ws_packet_received(packet: packets.Packet) -> void:
 		_handle_spores_batch_msg(sender_id, packet.get_spores_batch())
 	elif packet.has_spore_consumed():
 		_handle_spore_consumed_msg(sender_id, packet.get_spore_consumed())
+	elif packet.has_disconnect():
+		_handle_disconnect_msg(sender_id, packet.get_disconnect())
 
 
 func _handle_chat_msg(sender_id: int, chat_msg: packets.ChatMessage) -> void:
@@ -149,6 +155,14 @@ func _remove_spore(spore: Spore) -> void:
 func _handle_spores_batch_msg(sender_id: int, spores_batch_msg: packets.SporesBatchMessage) -> void:
 	for spore_msg in spores_batch_msg.get_spores():
 		_handle_spore_msg(sender_id, spore_msg)
+		
+		
+func _handle_disconnect_msg(sender_id: int, disconnect_msg: packets.DisconnectMessage) -> void:
+	if sender_id in _players:
+		var player := _players[sender_id]
+		var reason := disconnect_msg.get_reason()
+		_log.info("%s disconnected because %s" % [player.actor_name, reason])
+		_remove_actor(player)
 
 	
 func _on_line_edit_text_entered(text: String) -> void:
@@ -171,6 +185,18 @@ func _on_player_area_entered(area: Area2D) -> void:
 		_collide_actor(area as Actor)
 		
 		
+func _on_logout_button_pressed() -> void:
+	var packet := packets.Packet.new()
+	var disconnect_msg := packet.new_disconnect()
+	disconnect_msg.set_reason("logged out")
+	WS.send(packet)
+	GameManager.set_state(GameManager.State.CONNECTED)
+		
+		
+func _on_send_button_pressed() -> void:
+	_on_line_edit_text_entered(_line_edit.text)
+	
+	
 func _collide_actor(actor: Actor) -> void:
 	var player := _players[GameManager.client_id]
 	var player_mass := _rad_to_mass(player.radius)

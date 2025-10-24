@@ -186,6 +186,8 @@ func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 		g.handlePlayerConsumed(senderId, message)
 	case *packets.Packet_Spore:
 		g.handleSpore(senderId, message)
+	case *packets.Packet_Disconnect:
+		g.handleDisconnect(senderId, message)
 	}
 }
 
@@ -303,6 +305,15 @@ func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_P
 
 func (g *InGame) handleSpore(senderId uint64, message *packets.Packet_Spore) {
 	g.client.SocketSendAs(message, senderId)
+}
+
+func (g *InGame) handleDisconnect(senderId uint64, message *packets.Packet_Disconnect) {
+	if senderId == g.client.Id() {
+		g.client.Broadcast(message)
+		g.client.SetState(&Connected{})
+	} else {
+		go g.client.SocketSendAs(message, senderId)
+	}
 }
 
 func (g *InGame) getOtherPlayer(otherId uint64) (*objects.Player, error) {

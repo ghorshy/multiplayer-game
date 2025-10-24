@@ -180,6 +180,7 @@ func (c *WebSocketClient) WritePump() {
 }
 
 func (c *WebSocketClient) Close(reason string) {
+	c.Broadcast(packets.NewDisconnect(reason))
 	c.logger.Printf("Closing client connection because: %s", reason)
 
 	c.SetState(nil)
