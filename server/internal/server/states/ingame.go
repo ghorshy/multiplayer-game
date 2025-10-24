@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"server/internal/server"
 	"server/internal/server/db"
 	"server/internal/server/objects"
@@ -30,6 +31,15 @@ func (g *InGame) validatePlayerCloseToObject(objX, objY, objRadius, buffer float
 
 	if realDistSq > thresholdDistSq {
 		return fmt.Errorf("player is too far from the object (distSq: %f, thresholdSq: %f)", realDistSq, thresholdDistSq)
+	}
+	return nil
+}
+
+func (g *InGame) validatePlayerDropCooldown(spore *objects.Spore, buffer float64) error {
+	minAcceptableDistance := spore.Radius + g.player.Radius - buffer
+	minAcceptableTime := time.Duration(minAcceptableDistance/g.player.Speed*1000) * time.Millisecond
+	if spore.DroppedBy == g.player && time.Since(spore.DroppedAt) < minAcceptableTime {
+		return fmt.Errorf("player dropped the spore too recently (time since drop: %v, min acceptable time: %v", time.Since(spore.DroppedAt), minAcceptableTime)
 	}
 	return nil
 }
@@ -69,6 +79,21 @@ func (g *InGame) syncPlayer(delta float64) {
 
 	g.player.X = newX
 	g.player.Y = newY
+
+	probability := g.player.Radius / float64(server.MaxSpores*5)
+	if rand.Float64() < probability && g.player.Radius > 10 {
+		spore := &objects.Spore{
+			X:         g.player.X,
+			Y:         g.player.Y,
+			Radius:    min(5*g.player.Radius/50, 15),
+			DroppedBy: g.player,
+			DroppedAt: time.Now(),
+		}
+		sporeId := g.client.SharedGameObjects().Spores.Add(spore)
+		g.client.Broadcast(packets.NewSpore(sporeId, spore))
+		go g.client.SocketSend(packets.NewSpore(sporeId, spore))
+		g.player.Radius = g.nextRadius(-radToMass(spore.Radius))
+	}
 
 	updatePacket := packets.NewPlayer(g.client.Id(), g.player)
 	g.client.Broadcast(updatePacket)
@@ -208,6 +233,12 @@ func (g *InGame) handleSporeConsumed(senderId uint64, message *packets.Packet_Sp
 	}
 
 	err = g.validatePlayerCloseToObject(spore.X, spore.Y, spore.Radius, 10)
+	if err != nil {
+		g.logger.Println(errMsg + err.Error())
+		return
+	}
+
+	err = g.validatePlayerDropCooldown(spore, 10)
 	if err != nil {
 		g.logger.Println(errMsg + err.Error())
 		return
