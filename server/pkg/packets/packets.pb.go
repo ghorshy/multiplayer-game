@@ -805,6 +805,50 @@ func (*FinishedBrowsingHiscoresMessage) Descriptor() ([]byte, []int) {
 	return file_packets_proto_rawDescGZIP(), []int{15}
 }
 
+type SearchHiscoreMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchHiscoreMessage) Reset() {
+	*x = SearchHiscoreMessage{}
+	mi := &file_packets_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchHiscoreMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchHiscoreMessage) ProtoMessage() {}
+
+func (x *SearchHiscoreMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchHiscoreMessage.ProtoReflect.Descriptor instead.
+func (*SearchHiscoreMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SearchHiscoreMessage) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 type Packet struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	SenderId uint64                 `protobuf:"varint,1,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`
@@ -826,6 +870,7 @@ type Packet struct {
 	//	*Packet_Hiscore
 	//	*Packet_HiscoreBoard
 	//	*Packet_FinishedBrowsingHiscores
+	//	*Packet_SearchHiscore
 	Msg           isPacket_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -833,7 +878,7 @@ type Packet struct {
 
 func (x *Packet) Reset() {
 	*x = Packet{}
-	mi := &file_packets_proto_msgTypes[16]
+	mi := &file_packets_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -845,7 +890,7 @@ func (x *Packet) String() string {
 func (*Packet) ProtoMessage() {}
 
 func (x *Packet) ProtoReflect() protoreflect.Message {
-	mi := &file_packets_proto_msgTypes[16]
+	mi := &file_packets_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -858,7 +903,7 @@ func (x *Packet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Packet.ProtoReflect.Descriptor instead.
 func (*Packet) Descriptor() ([]byte, []int) {
-	return file_packets_proto_rawDescGZIP(), []int{16}
+	return file_packets_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Packet) GetSenderId() uint64 {
@@ -1019,6 +1064,15 @@ func (x *Packet) GetFinishedBrowsingHiscores() *FinishedBrowsingHiscoresMessage 
 	return nil
 }
 
+func (x *Packet) GetSearchHiscore() *SearchHiscoreMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_SearchHiscore); ok {
+			return x.SearchHiscore
+		}
+	}
+	return nil
+}
+
 type isPacket_Msg interface {
 	isPacket_Msg()
 }
@@ -1087,6 +1141,10 @@ type Packet_FinishedBrowsingHiscores struct {
 	FinishedBrowsingHiscores *FinishedBrowsingHiscoresMessage `protobuf:"bytes,17,opt,name=finished_browsing_hiscores,json=finishedBrowsingHiscores,proto3,oneof"`
 }
 
+type Packet_SearchHiscore struct {
+	SearchHiscore *SearchHiscoreMessage `protobuf:"bytes,18,opt,name=search_hiscore,json=searchHiscore,proto3,oneof"`
+}
+
 func (*Packet_Chat) isPacket_Msg() {}
 
 func (*Packet_Id) isPacket_Msg() {}
@@ -1118,6 +1176,8 @@ func (*Packet_Hiscore) isPacket_Msg() {}
 func (*Packet_HiscoreBoard) isPacket_Msg() {}
 
 func (*Packet_FinishedBrowsingHiscores) isPacket_Msg() {}
+
+func (*Packet_SearchHiscore) isPacket_Msg() {}
 
 var File_packets_proto protoreflect.FileDescriptor
 
@@ -1165,7 +1225,9 @@ const file_packets_proto_rawDesc = "" +
 	"\x05score\x18\x03 \x01(\x04R\x05score\"J\n" +
 	"\x13HiscoreBoardMessage\x123\n" +
 	"\bhiscores\x18\x01 \x03(\v2\x17.packets.HiscoreMessageR\bhiscores\"!\n" +
-	"\x1fFinishedBrowsingHiscoresMessage\"\xd9\b\n" +
+	"\x1fFinishedBrowsingHiscoresMessage\"*\n" +
+	"\x14SearchHiscoreMessage\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"\xa1\t\n" +
 	"\x06Packet\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\x04R\bsenderId\x12*\n" +
 	"\x04chat\x18\x02 \x01(\v2\x14.packets.ChatMessageH\x00R\x04chat\x12$\n" +
@@ -1185,7 +1247,8 @@ const file_packets_proto_rawDesc = "" +
 	"\x16hi_score_board_request\x18\x0e \x01(\v2#.packets.HiscoreBoardRequestMessageH\x00R\x13hiScoreBoardRequest\x123\n" +
 	"\ahiscore\x18\x0f \x01(\v2\x17.packets.HiscoreMessageH\x00R\ahiscore\x12C\n" +
 	"\rhiscore_board\x18\x10 \x01(\v2\x1c.packets.HiscoreBoardMessageH\x00R\fhiscoreBoard\x12h\n" +
-	"\x1afinished_browsing_hiscores\x18\x11 \x01(\v2(.packets.FinishedBrowsingHiscoresMessageH\x00R\x18finishedBrowsingHiscoresB\x05\n" +
+	"\x1afinished_browsing_hiscores\x18\x11 \x01(\v2(.packets.FinishedBrowsingHiscoresMessageH\x00R\x18finishedBrowsingHiscores\x12F\n" +
+	"\x0esearch_hiscore\x18\x12 \x01(\v2\x1d.packets.SearchHiscoreMessageH\x00R\rsearchHiscoreB\x05\n" +
 	"\x03msgB\rZ\vpkg/packetsb\x06proto3"
 
 var (
@@ -1200,7 +1263,7 @@ func file_packets_proto_rawDescGZIP() []byte {
 	return file_packets_proto_rawDescData
 }
 
-var file_packets_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_packets_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_packets_proto_goTypes = []any{
 	(*ChatMessage)(nil),                     // 0: packets.ChatMessage
 	(*IdMessage)(nil),                       // 1: packets.IdMessage
@@ -1218,7 +1281,8 @@ var file_packets_proto_goTypes = []any{
 	(*HiscoreMessage)(nil),                  // 13: packets.HiscoreMessage
 	(*HiscoreBoardMessage)(nil),             // 14: packets.HiscoreBoardMessage
 	(*FinishedBrowsingHiscoresMessage)(nil), // 15: packets.FinishedBrowsingHiscoresMessage
-	(*Packet)(nil),                          // 16: packets.Packet
+	(*SearchHiscoreMessage)(nil),            // 16: packets.SearchHiscoreMessage
+	(*Packet)(nil),                          // 17: packets.Packet
 }
 var file_packets_proto_depIdxs = []int32{
 	8,  // 0: packets.SporesBatchMessage.spores:type_name -> packets.SporeMessage
@@ -1239,11 +1303,12 @@ var file_packets_proto_depIdxs = []int32{
 	13, // 15: packets.Packet.hiscore:type_name -> packets.HiscoreMessage
 	14, // 16: packets.Packet.hiscore_board:type_name -> packets.HiscoreBoardMessage
 	15, // 17: packets.Packet.finished_browsing_hiscores:type_name -> packets.FinishedBrowsingHiscoresMessage
-	18, // [18:18] is the sub-list for method output_type
-	18, // [18:18] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	16, // 18: packets.Packet.search_hiscore:type_name -> packets.SearchHiscoreMessage
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_packets_proto_init() }
@@ -1251,7 +1316,7 @@ func file_packets_proto_init() {
 	if File_packets_proto != nil {
 		return
 	}
-	file_packets_proto_msgTypes[16].OneofWrappers = []any{
+	file_packets_proto_msgTypes[17].OneofWrappers = []any{
 		(*Packet_Chat)(nil),
 		(*Packet_Id)(nil),
 		(*Packet_LoginRequest)(nil),
@@ -1268,6 +1333,7 @@ func file_packets_proto_init() {
 		(*Packet_Hiscore)(nil),
 		(*Packet_HiscoreBoard)(nil),
 		(*Packet_FinishedBrowsingHiscores)(nil),
+		(*Packet_SearchHiscore)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1275,7 +1341,7 @@ func file_packets_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_packets_proto_rawDesc), len(file_packets_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
