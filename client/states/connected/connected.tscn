@@ -1,8 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://d05wbkrwbasxi"]
+[gd_scene load_steps=3 format=3 uid="uid://d05wbkrwbasxi"]
 
 [ext_resource type="Script" uid="uid://n8b0e4aako3j" path="res://states/connected/connected.gd" id="1_idi6s"]
 [ext_resource type="Script" uid="uid://qms7yu0yo86t" path="res://classes/log/log.gd" id="1_jx7w3"]
-[ext_resource type="PackedScene" uid="uid://d4dcg3lj77o8d" path="res://classes/hiscores/hiscores.tscn" id="3_kh2bm"]
 
 [node name="Connected" type="Node"]
 script = ExtResource("1_idi6s")
@@ -25,32 +24,43 @@ grow_vertical = 2
 
 [node name="UsernameField" type="LineEdit" parent="UI/VBoxContainer"]
 layout_mode = 2
+focus_neighbor_bottom = NodePath("../PasswordField")
+placeholder_text = "Username"
 
 [node name="PasswordField" type="LineEdit" parent="UI/VBoxContainer"]
 layout_mode = 2
+focus_neighbor_top = NodePath("../UsernameField")
+focus_neighbor_bottom = NodePath("../HBoxContainer/LoginButton")
+placeholder_text = "Password"
+virtual_keyboard_type = 6
+secret = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/VBoxContainer"]
 layout_mode = 2
+alignment = 1
 
 [node name="LoginButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
 layout_mode = 2
+focus_neighbor_right = NodePath("../RegisterButton")
 text = "Login"
 
 [node name="RegisterButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
 layout_mode = 2
+focus_neighbor_left = NodePath("../LoginButton")
+focus_neighbor_top = NodePath("../../PasswordField")
+focus_neighbor_right = NodePath("../HiscoresButton")
 text = "Register"
 
 [node name="HiscoresButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_neighbor_left = NodePath("../RegisterButton")
+focus_neighbor_top = NodePath("../../PasswordField")
 text = "Hiscores"
 
 [node name="Log" type="RichTextLabel" parent="UI/VBoxContainer"]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
+scroll_following = true
 script = ExtResource("1_jx7w3")
 metadata/_custom_type_script = "uid://qms7yu0yo86t"
-
-[node name="Hiscores" parent="UI/VBoxContainer" instance=ExtResource("3_kh2bm")]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2

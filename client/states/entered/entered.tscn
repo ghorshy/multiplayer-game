@@ -9,6 +9,7 @@ script = ExtResource("1_jjk2u")
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Log" parent="UI" instance=ExtResource("2_ltgjr")]
+scroll_following = true
 
 [node name="LineEdit" type="LineEdit" parent="UI"]
 anchors_preset = 12

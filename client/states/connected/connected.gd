@@ -19,11 +19,6 @@ func _ready() -> void:
 	register_button.pressed.connect(_on_register_button_pressed)
 	hiscores_button.pressed.connect(_on_hiscores_button_pressed)
 	
-	var _hiscores := $UI/VBoxContainer/Hiscores as Hiscores
-	_hiscores.set_hiscore("Bob", 15434)
-	_hiscores.set_hiscore("Stifler", 2345)
-	_hiscores.set_hiscore("gruby z okularami", 8257)
-	
 
 func _on_ws_packet_received(packet: packets.Packet) -> void:
 	var sender_id := packet.get_sender_id()
