@@ -12,6 +12,7 @@ var start_y: float
 var start_rad: float
 var speed: float
 var is_player: bool
+var color: Color
 
 var velocity: Vector2
 var radius: float:
@@ -24,7 +25,7 @@ var radius: float:
 @onready var camera_2d: Camera2D = $Camera2D
 @onready var collision_shape_2d: CircleShape2D = $CollisionShape2D.shape
 
-static func instantiate(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, is_player: bool) -> Actor:
+static func instantiate(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, color: Color, is_player: bool) -> Actor:
 	var actor := Scene.instantiate()
 	actor.actor_id = actor_id
 	actor.actor_name = actor_name
@@ -32,6 +33,7 @@ static func instantiate(actor_id: int, actor_name: String, x: float, y: float, r
 	actor.start_y = y
 	actor.start_rad = radius
 	actor.speed = speed
+	actor.color = color
 	actor.is_player = is_player
 	
 	return actor
@@ -77,4 +79,4 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, collision_shape_2d.radius, Color.DARK_ORCHID)
+	draw_circle(Vector2.ZERO, collision_shape_2d.radius, color)

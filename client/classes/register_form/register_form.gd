@@ -2,7 +2,7 @@ class_name RegisterForm
 extends VBoxContainer
 
 
-signal form_submitted(username: String, password: String, confirm_password: String)
+signal form_submitted(username: String, password: String, confirm_password: String, color: Color)
 signal form_cancelled()
 
 
@@ -11,6 +11,7 @@ signal form_cancelled()
 @onready var confirm_password_field: LineEdit = %ConfirmPasswordField
 @onready var register_button: Button = %RegisterButton
 @onready var cancel_button: Button = %CancelButton
+@onready var color_picker: ColorPicker = %ColorPicker
 
 
 func _ready() -> void:
@@ -19,7 +20,7 @@ func _ready() -> void:
 	
 	
 func _on_register_button_pressed() -> void:
-	form_submitted.emit(username_field.text, password_field.text, confirm_password_field.text)
+	form_submitted.emit(username_field.text, password_field.text, confirm_password_field.text, color_picker.color)
 
 
 func _on_cancel_button_pressed() -> void:
