@@ -4,20 +4,19 @@ const packets := preload("uid://gf6c1u38lbn0")
 
 var _action_on_ok_received: Callable
 
-@onready var username_field: LineEdit = $UI/VBoxContainer/UsernameField
-@onready var password_field: LineEdit = $UI/VBoxContainer/PasswordField
-@onready var login_button: Button = $UI/VBoxContainer/HBoxContainer/LoginButton
-@onready var register_button: Button = $UI/VBoxContainer/HBoxContainer/RegisterButton
-@onready var hiscores_button: Button = %HiscoresButton
-@onready var _log: Log = $UI/VBoxContainer/Log
+@onready var _log: Log = %Log
+@onready var login_form: LoginForm = %LoginForm
+@onready var register_form: RegisterForm = %RegisterForm
+@onready var register_prompt: RichTextLabel = %RegisterPrompt
 
 
 func _ready() -> void:
 	WS.packet_received.connect(_on_ws_packet_received)
 	WS.connection_closed.connect(_on_ws_connection_closed)
-	login_button.pressed.connect(_on_login_button_pressed)
-	register_button.pressed.connect(_on_register_button_pressed)
-	hiscores_button.pressed.connect(_on_hiscores_button_pressed)
+	login_form.form_submitted.connect(_on_login_form_submitted)
+	register_form.form_submitted.connect(_on_register_form_submitted)
+	register_form.form_cancelled.connect(_on_register_form_cancelled)
+	register_prompt.meta_clicked.connect(_on_register_prompt_meta_clicked)
 	
 
 func _on_ws_packet_received(packet: packets.Packet) -> void:
@@ -33,23 +32,36 @@ func _on_ws_connection_closed() -> void:
 	pass
 	
 
-func _on_login_button_pressed() -> void:
+func _on_login_form_submitted(username: String, password: String) -> void:
 	var packet := packets.Packet.new()
-	var login_request_message := packet.new_login_request()
-	login_request_message.set_username(username_field.text)
-	login_request_message.set_password(password_field.text)
+	var login_request_msg := packet.new_login_request()
+	login_request_msg.set_username(username)
+	login_request_msg.set_password(password)
 	WS.send(packet)
 	_action_on_ok_received = func() -> void: GameManager.set_state(GameManager.State.INGAME)
-	
-	
-func _on_register_button_pressed() -> void:
-	var packet := packets.Packet.new()
-	var register_request_message := packet.new_register_request()
-	register_request_message.set_username(username_field.text)
-	register_request_message.set_password(password_field.text)
-	WS.send(packet)
-	_action_on_ok_received = func() -> void: _log.success("Registration successfull")
-	
 
-func _on_hiscores_button_pressed() -> void:
-	GameManager.set_state(GameManager.State.BROWSING_HISCORES)
+
+func _on_register_form_submitted(username: String, password: String, confirm_password: String) -> void:
+	if password != confirm_password:
+		_log.error("Passwords do not match")
+		return
+
+	var packet := packets.Packet.new()
+	var register_request_msg := packet.new_register_request()
+	register_request_msg.set_username(username)
+	register_request_msg.set_password(password)
+	WS.send(packet)
+	_action_on_ok_received = func() -> void: _log.success("Registration successful! Go back and log in with your new account.")
+
+
+func _on_register_form_cancelled() -> void:
+	register_form.hide()
+	login_form.show()
+	register_prompt.show()
+
+
+func _on_register_prompt_meta_clicked(meta: Variant) -> void:
+	if meta is String and meta == "register":
+		login_form.hide()
+		register_form.show()
+		register_prompt.hide()

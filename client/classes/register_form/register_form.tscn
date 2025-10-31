@@ -1,0 +1,51 @@
+[gd_scene load_steps=2 format=3 uid="uid://wmg25wpbvlp5"]
+
+[ext_resource type="Script" uid="uid://cypbf3d8q7kj5" path="res://classes/register_form/register_form.gd" id="1_1f7y0"]
+
+[node name="RegisterForm" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1f7y0")
+
+[node name="UsernameField" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_bottom = NodePath("../PasswordField")
+placeholder_text = "Username"
+
+[node name="PasswordField" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../UsernameField")
+placeholder_text = "Password"
+virtual_keyboard_type = 6
+secret = true
+
+[node name="ConfirmPasswordField" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../UsernameField")
+placeholder_text = "Confirm Password"
+virtual_keyboard_type = 6
+secret = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="RegisterButton" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../../PasswordField")
+focus_neighbor_right = NodePath("../CancelButton")
+text = "Register"
+
+[node name="CancelButton" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_left = NodePath("../RegisterButton")
+focus_neighbor_top = NodePath("../../PasswordField")
+text = "Cancel"
