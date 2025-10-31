@@ -19,7 +19,12 @@ var radius: float:
 	set(new_radius):
 		radius = new_radius
 		collision_shape_2d.set_radius(radius)
+		_update_zoom()
 		queue_redraw()
+		
+var target_zoom := 2.0
+var furthest_zoom_allowed := target_zoom
+var server_position: Vector2
 
 @onready var label: Label = $Label
 @onready var camera_2d: Camera2D = $Camera2D
@@ -43,9 +48,9 @@ func _input(event: InputEvent) -> void:
 	if is_player and event is InputEventMouseButton and event.is_pressed():
 		match event.button_index:
 			MOUSE_BUTTON_WHEEL_UP:
-				camera_2d.zoom.x = min(4, camera_2d.zoom.x + 0.1)
+				target_zoom = min(4, target_zoom + 0.1)
 			MOUSE_BUTTON_WHEEL_DOWN:
-				camera_2d.zoom.x = max(0.1, camera_2d.zoom.x - 0.1)
+				target_zoom = max(furthest_zoom_allowed, target_zoom - 0.1)
 				
 		camera_2d.zoom.y = camera_2d.zoom.x
 
@@ -53,6 +58,7 @@ func _input(event: InputEvent) -> void:
 func _ready() -> void:
 	position.x = start_x
 	position.y = start_y
+	server_position = position
 	velocity = Vector2.RIGHT * speed
 	radius = start_rad
 	
@@ -60,8 +66,15 @@ func _ready() -> void:
 	label.text = actor_name
 	
 	
+func _process(_delta: float) -> void:
+	if not is_equal_approx(camera_2d.zoom.x, target_zoom):
+		camera_2d.zoom -= Vector2(1, 1) * (camera_2d.zoom.x - target_zoom) * 0.05
+
+	
 func _physics_process(delta: float) -> void:
 	position += velocity * delta
+	server_position += velocity * delta
+	position += (server_position - position) * 0.05
 	
 	if not is_player:
 		return
@@ -80,3 +93,16 @@ func _physics_process(delta: float) -> void:
 
 func _draw() -> void:
 	draw_circle(Vector2.ZERO, collision_shape_2d.radius, color)
+	
+	
+func _update_zoom() -> void:
+	if is_node_ready():
+		label.add_theme_font_size_override("font_size", max(16, radius / 2))
+	
+	if not is_player:
+		return
+		
+	var new_furthest_zoom_allowed := 2 * start_rad / radius
+	if is_equal_approx(target_zoom, furthest_zoom_allowed):
+		target_zoom = new_furthest_zoom_allowed
+	furthest_zoom_allowed = new_furthest_zoom_allowed

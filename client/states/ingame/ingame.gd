@@ -73,6 +73,7 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 func _add_actor(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, color: Color, is_player: bool) -> void:
 	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, color, is_player)
 	world.add_child(actor)
+	actor.z_index = 1
 	_set_actor_mass(actor, _rad_to_mass(radius))
 	_players[actor_id] = actor
 	
@@ -85,9 +86,9 @@ func _update_actor(actor_id: int, x: float, y: float, direction: float, speed: f
 	_set_actor_mass(actor, _rad_to_mass(radius))
 	actor.radius = radius
 
-	if actor.position.distance_squared_to(Vector2(x, y)) > 100:
-		actor.position.x = x
-		actor.position.y = y
+	var server_position := Vector2(x, y)
+	if actor.position.distance_squared_to(server_position) > 50:
+		actor.server_position = server_position
 	
 	if not is_player:
 		actor.velocity = Vector2.from_angle(direction) * speed
