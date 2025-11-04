@@ -149,6 +149,18 @@ func NewHub(dataDirPath string) *Hub {
 		log.Fatal(err)
 	}
 
+	// Configure SQLite for concurrent operations
+	// WAL mode allows concurrent reads and writes
+	if _, err := dbPool.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		log.Fatal("Failed to enable WAL mode:", err)
+	}
+	// Set busy timeout to handle write contention (5 seconds)
+	if _, err := dbPool.Exec("PRAGMA busy_timeout=5000"); err != nil {
+		log.Fatal("Failed to set busy timeout:", err)
+	}
+	// SQLite only supports one writer at a time, so limit connection pool to 1
+	dbPool.SetMaxOpenConns(1)
+
 	return &Hub{
 		Clients:        objects.NewSharedCollection[ClientInterfacer](),
 		BroadcastChan:  make(chan *packets.Packet),

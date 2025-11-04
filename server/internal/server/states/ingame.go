@@ -100,6 +100,20 @@ func (g *InGame) syncPlayer(delta float64) {
 	go g.client.SocketSend(updatePacket)
 }
 
+func (g *InGame) bestScoreSyncLoop(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			g.syncPlayerBestScore()
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
 func (g *InGame) syncPlayerBestScore() {
 	currentScore := int64(math.Round(radToMass(g.player.Radius)))
 	if currentScore > g.player.BestScore {
@@ -115,10 +129,11 @@ func (g *InGame) syncPlayerBestScore() {
 }
 
 type InGame struct {
-	client                 server.ClientInterfacer
-	player                 *objects.Player
-	logger                 *log.Logger
-	cancelPlayerUpdateLoop context.CancelFunc
+	client                    server.ClientInterfacer
+	player                    *objects.Player
+	logger                    *log.Logger
+	cancelPlayerUpdateLoop    context.CancelFunc
+	cancelBestScoreSyncLoop   context.CancelFunc
 }
 
 func (g *InGame) Name() string {
@@ -142,6 +157,11 @@ func (g *InGame) OnEnter() {
 	g.client.SocketSend(packets.NewPlayer(g.client.Id(), g.player))
 
 	go g.sendInitialSpores(50, 50*time.Millisecond)
+
+	// Start background loop to sync best scores to database every 5 seconds
+	ctx, cancel := context.WithCancel(context.Background())
+	g.cancelBestScoreSyncLoop = cancel
+	go g.bestScoreSyncLoop(ctx)
 }
 
 func (g *InGame) sendInitialSpores(batchSize int, delay time.Duration) {
@@ -167,8 +187,12 @@ func (g *InGame) OnExit() {
 	if g.cancelPlayerUpdateLoop != nil {
 		g.cancelPlayerUpdateLoop()
 	}
+	if g.cancelBestScoreSyncLoop != nil {
+		g.cancelBestScoreSyncLoop()
+	}
 
 	g.client.SharedGameObjects().Players.Remove(g.client.Id())
+	// Final sync to ensure best score is saved before exiting
 	g.syncPlayerBestScore()
 }
 
@@ -252,8 +276,6 @@ func (g *InGame) handleSporeConsumed(senderId uint64, message *packets.Packet_Sp
 	go g.client.SharedGameObjects().Spores.Remove(sporeId)
 
 	g.client.Broadcast(message)
-
-	go g.syncPlayerBestScore()
 }
 
 func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_PlayerConsumed) {
@@ -299,8 +321,6 @@ func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_P
 	go g.client.SharedGameObjects().Players.Remove(otherId)
 
 	g.client.Broadcast(message)
-
-	go g.syncPlayerBestScore()
 }
 
 func (g *InGame) handleSpore(senderId uint64, message *packets.Packet_Spore) {
