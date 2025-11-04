@@ -16,23 +16,38 @@ func set_hiscore(name: String, score: int, highlight: bool = false) -> void:
 	_add_hiscore(name, score, highlight)
 
 
+func _format_score(score: int) -> String:
+	if score < 1000:
+		return str(score)
+	elif score < 100000:
+		var score_k := score / 1000.0
+		
+		if fmod(score_k, 1.0) < 0.01:
+			return str(int(score_k)) + "k"
+		else:
+			return "%.1fk" % score_k
+	else:
+		var score_k := roundi(score / 1000.0)
+		return str(score_k) + "k"
+
+
 func _add_hiscore(name: String, score: int, highlight: bool) -> void:
 	_scores.append(score)
 	_scores.sort()
 	var pos := len(_scores) - _scores.find(score) - 1
-	
+
 	var entry := _entry_template.duplicate()
 	var name_label: Label = entry.get_child(0)
 	var score_label: Label = entry.get_child(1)
-	
+
 	_vbox.add_child(entry)
 	_vbox.move_child(entry, pos)
-	
+
 	name_label.text = name
-	score_label.text = str(score)
-	
+	score_label.text = _format_score(score)
+
 	entry.show()
-	
+
 	if highlight:
 		name_label.add_theme_color_override("font_color", Color.YELLOW)
 
