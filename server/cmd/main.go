@@ -13,13 +13,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const (
-	dockerMountedDataDir = "/gameserver/data"
-)
-
 type config struct {
-	DataPath string
-	Port     int
+	DatabaseURL string
+	Port        int
 }
 
 var (
@@ -29,7 +25,7 @@ var (
 
 func loadConfig() *config {
 	cfg := defaultConfig
-	cfg.DataPath = os.Getenv("DATA_PATH")
+	cfg.DatabaseURL = os.Getenv("DATABASE_URL")
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
@@ -38,23 +34,6 @@ func loadConfig() *config {
 	}
 	cfg.Port = port
 	return cfg
-}
-
-func coalescePaths(fallbacks ...string) string {
-	for i, path := range fallbacks {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			message := fmt.Sprintf("File/folder not found at %s", path)
-			if i < len(fallbacks)-1 {
-				log.Printf("%s - going to try %s", message, fallbacks[i+1])
-			} else {
-				log.Printf("%s - no more fallbacks to try", message)
-			}
-		} else {
-			log.Printf("File/Folder found at %s", path)
-			return path
-		}
-	}
-	return ""
 }
 
 func main() {
@@ -67,8 +46,12 @@ func main() {
 		cfg = loadConfig()
 	}
 
-	cfg.DataPath = coalescePaths(cfg.DataPath, dockerMountedDataDir, ".")
-	hub := server.NewHub(cfg.DataPath)
+	// Validate DATABASE_URL is set
+	if cfg.DatabaseURL == "" {
+		log.Fatal("DATABASE_URL environment variable is required")
+	}
+
+	hub := server.NewHub(cfg.DatabaseURL)
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		hub.Serve(clients.NewWebSocketClient, w, r)

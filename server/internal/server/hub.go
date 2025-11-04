@@ -7,13 +7,12 @@ import (
 	"log"
 	"math/rand/v2"
 	"net/http"
-	"path"
 	"server/internal/server/db"
 	"server/internal/server/objects"
 	"server/pkg/packets"
 	"time"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func (h *Hub) replenishSporesLoop(rate time.Duration) {
@@ -143,23 +142,24 @@ type ClientStateHandler interface {
 	OnExit()
 }
 
-func NewHub(dataDirPath string) *Hub {
-	dbPool, err := sql.Open("sqlite", path.Join(dataDirPath, "db.sqlite"))
+func NewHub(databaseURL string) *Hub {
+	dbPool, err := sql.Open("pgx", databaseURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to open database connection:", err)
 	}
 
-	// Configure SQLite for concurrent operations
-	// WAL mode allows concurrent reads and writes
-	if _, err := dbPool.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		log.Fatal("Failed to enable WAL mode:", err)
+	// Test the connection
+	if err := dbPool.Ping(); err != nil {
+		log.Fatal("Failed to ping database:", err)
 	}
-	// Set busy timeout to handle write contention (5 seconds)
-	if _, err := dbPool.Exec("PRAGMA busy_timeout=5000"); err != nil {
-		log.Fatal("Failed to set busy timeout:", err)
-	}
-	// SQLite only supports one writer at a time, so limit connection pool to 1
-	dbPool.SetMaxOpenConns(1)
+
+	// Configure PostgreSQL connection pool
+	// PostgreSQL handles concurrent connections much better than SQLite
+	dbPool.SetMaxOpenConns(25)      // Maximum number of open connections
+	dbPool.SetMaxIdleConns(5)       // Maximum number of idle connections
+	dbPool.SetConnMaxLifetime(5 * time.Minute) // Maximum connection lifetime
+
+	log.Println("Successfully connected to PostgreSQL database")
 
 	return &Hub{
 		Clients:        objects.NewSharedCollection[ClientInterfacer](),

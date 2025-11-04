@@ -1,15 +1,17 @@
 CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS players (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
   name TEXT NOT NULL UNIQUE,
   best_score INTEGER NOT NULL DEFAULT 0,
-  color INTEGER NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  color INTEGER NOT NULL
 );
+
+-- Index for faster leaderboard queries
+CREATE INDEX IF NOT EXISTS idx_players_best_score ON players(best_score DESC);
 

@@ -13,15 +13,15 @@ const createPlayer = `-- name: CreatePlayer :one
 INSERT INTO players (
   user_id, name, color
 ) VALUES (
-  ?, ?, ?
+  $1, $2, $3
 )
 RETURNING id, user_id, name, best_score, color
 `
 
 type CreatePlayerParams struct {
-	UserID int64
-	Name   string
-	Color  int64
+	UserID int32  `json:"user_id"`
+	Name   string `json:"name"`
+	Color  int32  `json:"color"`
 }
 
 func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {
@@ -41,14 +41,14 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, password_hash
 ) VALUES (
-  ?, ?
+  $1, $2
 )
 RETURNING id, username, password_hash
 `
 
 type CreateUserParams struct {
-	Username     string
-	PasswordHash string
+	Username     string `json:"username"`
+	PasswordHash string `json:"password_hash"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -60,7 +60,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 
 const getPlayerByName = `-- name: GetPlayerByName :one
 SELECT id, user_id, name, best_score, color FROM players
-WHERE name LIKE ?
+WHERE name ILIKE $1
 LIMIT 1
 `
 
@@ -79,10 +79,10 @@ func (q *Queries) GetPlayerByName(ctx context.Context, name string) (Player, err
 
 const getPlayerByUserID = `-- name: GetPlayerByUserID :one
 SELECT id, user_id, name, best_score, color FROM players
-WHERE user_id = ? LIMIT 1
+WHERE user_id = $1 LIMIT 1
 `
 
-func (q *Queries) GetPlayerByUserID(ctx context.Context, userID int64) (Player, error) {
+func (q *Queries) GetPlayerByUserID(ctx context.Context, userID int32) (Player, error) {
 	row := q.db.QueryRowContext(ctx, getPlayerByUserID, userID)
 	var i Player
 	err := row.Scan(
@@ -96,16 +96,16 @@ func (q *Queries) GetPlayerByUserID(ctx context.Context, userID int64) (Player, 
 }
 
 const getPlayerRank = `-- name: GetPlayerRank :one
-SELECT COUNT(*) + 1 AS "rank" FROM players
+SELECT COUNT(*) + 1 AS rank FROM players
 WHERE best_score > (
   SELECT best_score FROM players p2
-  WHERE p2.id = ?
+  WHERE p2.id = $1
 )
 `
 
-func (q *Queries) GetPlayerRank(ctx context.Context, id int64) (int64, error) {
+func (q *Queries) GetPlayerRank(ctx context.Context, id int32) (int32, error) {
 	row := q.db.QueryRowContext(ctx, getPlayerRank, id)
-	var rank int64
+	var rank int32
 	err := row.Scan(&rank)
 	return rank, err
 }
@@ -114,18 +114,18 @@ const getTopScores = `-- name: GetTopScores :many
 SELECT name, best_score
 FROM players
 ORDER BY best_score DESC
-LIMIT ?
-OFFSET ?
+LIMIT $1
+OFFSET $2
 `
 
 type GetTopScoresParams struct {
-	Limit  int64
-	Offset int64
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 type GetTopScoresRow struct {
-	Name      string
-	BestScore int64
+	Name      string `json:"name"`
+	BestScore int32  `json:"best_score"`
 }
 
 func (q *Queries) GetTopScores(ctx context.Context, arg GetTopScoresParams) ([]GetTopScoresRow, error) {
@@ -153,7 +153,7 @@ func (q *Queries) GetTopScores(ctx context.Context, arg GetTopScoresParams) ([]G
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT id, username, password_hash FROM users
-WHERE username = ? LIMIT 1
+WHERE username = $1 LIMIT 1
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -165,13 +165,13 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const updatePlayerBestScore = `-- name: UpdatePlayerBestScore :exec
 UPDATE players
-SET best_score = ?
-WHERE id = ?
+SET best_score = $1
+WHERE id = $2
 `
 
 type UpdatePlayerBestScoreParams struct {
-	BestScore int64
-	ID        int64
+	BestScore int32 `json:"best_score"`
+	ID        int32 `json:"id"`
 }
 
 func (q *Queries) UpdatePlayerBestScore(ctx context.Context, arg UpdatePlayerBestScoreParams) error {

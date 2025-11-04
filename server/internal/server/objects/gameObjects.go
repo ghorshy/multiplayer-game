@@ -9,8 +9,8 @@ type Player struct {
 	Radius    float64
 	Direction float64
 	Speed     float64
-	DbId      int64
-	BestScore int64
+	DbId      int32
+	BestScore int32
 	Color     int32
 }
 

@@ -5,15 +5,15 @@
 package db
 
 type Player struct {
-	ID        int64
-	UserID    int64
-	Name      string
-	BestScore int64
-	Color     int64
+	ID        int32  `json:"id"`
+	UserID    int32  `json:"user_id"`
+	Name      string `json:"name"`
+	BestScore int32  `json:"best_score"`
+	Color     int32  `json:"color"`
 }
 
 type User struct {
-	ID           int64
-	Username     string
-	PasswordHash string
+	ID           int32  `json:"id"`
+	Username     string `json:"username"`
+	PasswordHash string `json:"password_hash"`
 }

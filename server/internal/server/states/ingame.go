@@ -121,7 +121,7 @@ func (g *InGame) bestScoreSyncLoop(ctx context.Context) {
 }
 
 func (g *InGame) syncPlayerBestScore() {
-	currentScore := int64(math.Round(radToMass(g.player.Radius)))
+	currentScore := int32(math.Round(radToMass(g.player.Radius)))
 	if currentScore > g.player.BestScore {
 		g.player.BestScore = currentScore
 		err := g.client.DbTx().Queries.UpdatePlayerBestScore(g.client.DbTx().Ctx, db.UpdatePlayerBestScoreParams{

@@ -66,12 +66,12 @@ func (b *BrowsingHiscores) handleSearchHiscore(_ uint64, message *packets.Packet
 		return
 	}
 
-	const limit int64 = 10
+	const limit int32 = 10
 	offset := playerRank - limit/2
 	b.sendTopScores(limit, max(0, offset))
 }
 
-func (b *BrowsingHiscores) sendTopScores(limit int64, offset int64) {
+func (b *BrowsingHiscores) sendTopScores(limit int32, offset int32) {
 	topScores, err := b.queries.GetTopScores(b.dbCtx, db.GetTopScoresParams{
 		Limit:  limit,
 		Offset: offset,

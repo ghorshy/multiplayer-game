@@ -145,7 +145,7 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 	_, err = c.queries.CreatePlayer(c.dbCtx, db.CreatePlayerParams{
 		UserID: user.ID,
 		Name:   message.RegisterRequest.Username,
-		Color:  int64(message.RegisterRequest.Color),
+		Color:  int32(message.RegisterRequest.Color),
 	})
 
 	if err != nil {
