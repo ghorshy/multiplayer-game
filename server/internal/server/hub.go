@@ -180,9 +180,10 @@ func (h *Hub) Run() {
 		log.Fatal(err)
 	}
 
-	// log.Println("Placing spores...")
-	// 	h.SharedGameObjects.Spores.Add(h.newSpore())
-	// }
+	log.Println("Placing spores...")
+	for i := 0; i < MaxSpores; i++ {
+		h.SharedGameObjects.Spores.Add(h.newSpore())
+	}
 
 	go h.replenishSporesLoop(2 * time.Second)
 
