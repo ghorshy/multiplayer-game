@@ -89,9 +89,11 @@ func _update_actor(actor_id: int, x: float, y: float, direction: float, speed: f
 	actor.radius = radius
 
 	var server_position := Vector2(x, y)
-	if actor.position.distance_squared_to(server_position) > 50:
+	# Always update server position for the player to prevent drift at boundaries
+	# For other actors, only update if significantly far to reduce jitter
+	if is_player or actor.position.distance_squared_to(server_position) > 50:
 		actor.server_position = server_position
-	
+
 	if not is_player:
 		actor.velocity = Vector2.from_angle(direction) * speed
 

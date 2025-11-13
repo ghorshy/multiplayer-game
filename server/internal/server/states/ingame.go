@@ -80,13 +80,56 @@ func (g *InGame) syncPlayer(delta float64) {
 	newX := g.player.X + g.player.Speed*math.Cos(g.player.Direction)*delta
 	newY := g.player.Y + g.player.Speed*math.Sin(g.player.Direction)*delta
 
-	// Enforce world boundaries - clamp position to stay within bounds
-	// Account for player radius to prevent center going beyond bounds
+	// Rubber-band boundary enforcement
+	// Creates a soft wall that pushes back with increasing force
 	buffer := g.player.Radius
-	newX = math.Max(objects.MinX+buffer, math.Min(objects.MaxX-buffer, newX))
-	newY = math.Max(objects.MinY+buffer, math.Min(objects.MaxY-buffer, newY))
+	rubberBandZone := 200.0 // Distance from boundary where rubber-band starts
 
-	// Update player position BEFORE dropping spores
+	// X-axis rubber-banding
+	minXBound := objects.MinX + buffer
+	maxXBound := objects.MaxX - buffer
+	if newX < minXBound {
+		// Hard clamp at boundary
+		newX = minXBound
+	} else if newX < minXBound+rubberBandZone {
+		// Soft zone: apply resistance
+		distanceIntoBoundary := minXBound + rubberBandZone - newX
+		resistance := distanceIntoBoundary / rubberBandZone // 0 to 1
+		pushBack := resistance * resistance * g.player.Speed * delta * 2
+		newX += pushBack
+	}
+
+	if newX > maxXBound {
+		newX = maxXBound
+	} else if newX > maxXBound-rubberBandZone {
+		distanceIntoBoundary := newX - (maxXBound - rubberBandZone)
+		resistance := distanceIntoBoundary / rubberBandZone
+		pushBack := resistance * resistance * g.player.Speed * delta * 2
+		newX -= pushBack
+	}
+
+	// Y-axis rubber-banding
+	minYBound := objects.MinY + buffer
+	maxYBound := objects.MaxY - buffer
+	if newY < minYBound {
+		newY = minYBound
+	} else if newY < minYBound+rubberBandZone {
+		distanceIntoBoundary := minYBound + rubberBandZone - newY
+		resistance := distanceIntoBoundary / rubberBandZone
+		pushBack := resistance * resistance * g.player.Speed * delta * 2
+		newY += pushBack
+	}
+
+	if newY > maxYBound {
+		newY = maxYBound
+	} else if newY > maxYBound-rubberBandZone {
+		distanceIntoBoundary := newY - (maxYBound - rubberBandZone)
+		resistance := distanceIntoBoundary / rubberBandZone
+		pushBack := resistance * resistance * g.player.Speed * delta * 2
+		newY -= pushBack
+	}
+
+	// Update player position
 	g.player.X = newX
 	g.player.Y = newY
 

@@ -73,12 +73,56 @@ func _process(_delta: float) -> void:
 	
 func _physics_process(delta: float) -> void:
 	# Only update visual position with velocity for smooth local movement
-	position += velocity * delta
+	var new_pos := position + velocity * delta
 
-	# Enforce world boundaries on visual position
+	# Rubber-band boundary enforcement
+	# Creates a soft wall that pushes back with increasing force
 	var buffer := radius
-	position.x = clampf(position.x, GameManager.bounds_min_x + buffer, GameManager.bounds_max_x - buffer)
-	position.y = clampf(position.y, GameManager.bounds_min_y + buffer, GameManager.bounds_max_y - buffer)
+	var rubber_band_zone := 200.0  # Distance from boundary where rubber-band starts
+
+	# X-axis rubber-banding
+	var min_x_bound := GameManager.bounds_min_x + buffer
+	var max_x_bound := GameManager.bounds_max_x - buffer
+
+	if new_pos.x < min_x_bound:
+		# Hard clamp at boundary
+		new_pos.x = min_x_bound
+	elif new_pos.x < min_x_bound + rubber_band_zone:
+		# Soft zone: apply resistance
+		var distance_into_boundary := min_x_bound + rubber_band_zone - new_pos.x
+		var resistance := distance_into_boundary / rubber_band_zone  # 0 to 1
+		var push_back := resistance * resistance * speed * delta * 2.0
+		new_pos.x += push_back
+
+	if new_pos.x > max_x_bound:
+		new_pos.x = max_x_bound
+	elif new_pos.x > max_x_bound - rubber_band_zone:
+		var distance_into_boundary := new_pos.x - (max_x_bound - rubber_band_zone)
+		var resistance := distance_into_boundary / rubber_band_zone
+		var push_back := resistance * resistance * speed * delta * 2.0
+		new_pos.x -= push_back
+
+	# Y-axis rubber-banding
+	var min_y_bound := GameManager.bounds_min_y + buffer
+	var max_y_bound := GameManager.bounds_max_y - buffer
+
+	if new_pos.y < min_y_bound:
+		new_pos.y = min_y_bound
+	elif new_pos.y < min_y_bound + rubber_band_zone:
+		var distance_into_boundary := min_y_bound + rubber_band_zone - new_pos.y
+		var resistance := distance_into_boundary / rubber_band_zone
+		var push_back := resistance * resistance * speed * delta * 2.0
+		new_pos.y += push_back
+
+	if new_pos.y > max_y_bound:
+		new_pos.y = max_y_bound
+	elif new_pos.y > max_y_bound - rubber_band_zone:
+		var distance_into_boundary := new_pos.y - (max_y_bound - rubber_band_zone)
+		var resistance := distance_into_boundary / rubber_band_zone
+		var push_back := resistance * resistance * speed * delta * 2.0
+		new_pos.y -= push_back
+
+	position = new_pos
 
 	# Smoothly interpolate toward server-authoritative position
 	# server_position is ONLY updated by server messages, not predicted locally
