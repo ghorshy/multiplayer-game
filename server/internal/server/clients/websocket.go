@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"server/internal/server"
 	"server/internal/server/states"
@@ -127,14 +128,26 @@ func (c *WebSocketClient) ReadPump() {
 		c.Close("Read pump closed")
 	}()
 
+	// Set up pong handler to respond to ping messages
+	c.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	c.conn.SetPongHandler(func(string) error {
+		c.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
+
 	for {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				c.logger.Printf("error: %v", err)
+				c.logger.Printf("WebSocket read error: %v", err)
+			} else {
+				c.logger.Printf("Connection closed: %v", err)
 			}
 			break
 		}
+
+		// Reset read deadline on each message
+		c.conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 
 		packet := &packets.Packet{}
 		err = proto.Unmarshal(data, packet)
@@ -158,39 +171,68 @@ func (c *WebSocketClient) WritePump() {
 		c.Close("write pump closed")
 	}()
 
-	for packet := range c.sendChan {
-		writer, err := c.conn.NextWriter(websocket.BinaryMessage)
-		if err != nil {
-			c.logger.Printf("error getting writer for %T packet, closing client: %v", packet.Msg, err)
-			return
+	// Send ping to client every 30 seconds to keep connection alive
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case packet, ok := <-c.sendChan:
+			if !ok {
+				// Channel closed
+				return
+			}
+			c.writePacket(packet)
+
+		case <-ticker.C:
+			// Send ping
+			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				c.logger.Printf("Failed to send ping: %v", err)
+				return
+			}
 		}
+	}
+}
 
-		data, err := proto.Marshal(packet)
-		if err != nil {
-			c.logger.Printf("error marshalling %T packet, dropping: %v", packet.Msg, err)
-			continue
-		}
+func (c *WebSocketClient) writePacket(packet *packets.Packet) {
+	c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
-		_, writeErr := writer.Write(data)
+	writer, err := c.conn.NextWriter(websocket.BinaryMessage)
+	if err != nil {
+		c.logger.Printf("error getting writer for %T packet: %v", packet.Msg, err)
+		return
+	}
 
-		if writeErr != nil {
-			c.logger.Printf("error writing %T packet: %v", packet.Msg, err)
-			continue
-		}
+	data, err := proto.Marshal(packet)
+	if err != nil {
+		c.logger.Printf("error marshalling %T packet, dropping: %v", packet.Msg, err)
+		return
+	}
 
-		writer.Write([]byte{'\n'})
+	_, writeErr := writer.Write(data)
+	if writeErr != nil {
+		c.logger.Printf("error writing %T packet: %v", packet.Msg, writeErr)
+		return
+	}
 
-		if closeErr := writer.Close(); closeErr != nil {
-			c.logger.Printf("error closing writer, dropping %T packet: %v", packet.Msg, err)
-			continue
-		}
+	writer.Write([]byte{'\n'})
+
+	if closeErr := writer.Close(); closeErr != nil {
+		c.logger.Printf("error closing writer: %v", closeErr)
+		return
 	}
 }
 
 func (c *WebSocketClient) Close(reason string) {
 	c.closeOnce.Do(func() {
-		c.Broadcast(packets.NewDisconnect(reason))
 		c.logger.Printf("Closing client connection because: %s", reason)
+
+		// Notify THIS client that they're being disconnected (so they can return to menu)
+		c.SocketSend(packets.NewDisconnect(reason))
+
+		// Also broadcast to other clients
+		c.Broadcast(packets.NewDisconnect(reason))
 
 		c.SetState(nil)
 
@@ -201,6 +243,10 @@ func (c *WebSocketClient) Close(reason string) {
 			c.logger.Printf("UnregisterChan full, forcing unregister in goroutine")
 			go func() { c.hub.UnregisterChan <- c }()
 		}
+
+		// Give a tiny bit of time for the disconnect message to be sent
+		// (WritePump will flush sendChan before dying)
+		time.Sleep(10 * time.Millisecond)
 
 		c.conn.Close()
 		close(c.closeChan) // Signal that we're closing

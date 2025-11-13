@@ -271,13 +271,17 @@ func (g *InGame) handleSporeConsumed(senderId uint64, message *packets.Packet_Sp
 		return
 	}
 
-	err = g.validatePlayerCloseToObject(spore.X, spore.Y, spore.Radius, 10)
+	// Large buffer to account for network lag + server tick delay
+	// Google Cloud: ~50-100ms RTT + 50ms tick + jitter = need generous buffer
+	// At speed 150: 100ms = 15 units, 200ms = 30 units
+	const validationBuffer = 100.0
+	err = g.validatePlayerCloseToObject(spore.X, spore.Y, spore.Radius, validationBuffer)
 	if err != nil {
 		g.logger.Println(errMsg + err.Error())
 		return
 	}
 
-	err = g.validatePlayerDropCooldown(spore, 10)
+	err = g.validatePlayerDropCooldown(spore, validationBuffer)
 	if err != nil {
 		g.logger.Println(errMsg + err.Error())
 		return
@@ -323,7 +327,8 @@ func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_P
 		return
 	}
 
-	err = g.validatePlayerCloseToObject(other.X, other.Y, other.Radius, 10)
+	const validationBuffer = 100.0
+	err = g.validatePlayerCloseToObject(other.X, other.Y, other.Radius, validationBuffer)
 	if err != nil {
 		g.logger.Println(errMsg + err.Error())
 		return
