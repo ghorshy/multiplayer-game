@@ -75,6 +75,8 @@ func (g *InGame) playerUpdateLoop(ctx context.Context) {
 
 func (g *InGame) syncPlayer(delta float64) {
 	oldX, oldY := g.player.X, g.player.Y
+
+	// Calculate new position based on velocity
 	newX := g.player.X + g.player.Speed*math.Cos(g.player.Direction)*delta
 	newY := g.player.Y + g.player.Speed*math.Sin(g.player.Direction)*delta
 
@@ -84,6 +86,7 @@ func (g *InGame) syncPlayer(delta float64) {
 	newX = math.Max(objects.MinX+buffer, math.Min(objects.MaxX-buffer, newX))
 	newY = math.Max(objects.MinY+buffer, math.Min(objects.MaxY-buffer, newY))
 
+	// Update player position BEFORE dropping spores
 	g.player.X = newX
 	g.player.Y = newY
 
@@ -92,11 +95,12 @@ func (g *InGame) syncPlayer(delta float64) {
 		g.logger.Printf("First position update: (%.2f, %.2f) -> (%.2f, %.2f)", oldX, oldY, newX, newY)
 	}
 
+	// Drop spores at the clamped position (after boundary enforcement)
 	probability := g.player.Radius / float64(server.MaxSpores*5)
 	if rand.Float64() < probability && g.player.Radius > 10 {
 		spore := &objects.Spore{
-			X:         g.player.X,
-			Y:         g.player.Y,
+			X:         g.player.X,  // Now uses the clamped position
+			Y:         g.player.Y,  // Now uses the clamped position
 			Radius:    min(5+g.player.Radius/50, 15),
 			DroppedBy: g.player,
 			DroppedAt: time.Now(),

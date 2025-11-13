@@ -72,17 +72,17 @@ func _process(_delta: float) -> void:
 
 	
 func _physics_process(delta: float) -> void:
+	# Only update visual position with velocity for smooth local movement
 	position += velocity * delta
-	server_position += velocity * delta
-	position += (server_position - position) * 0.05
 
-	# Enforce world boundaries - clamp position to stay within bounds
-	# Account for actor radius to prevent the edge going beyond bounds
+	# Enforce world boundaries on visual position
 	var buffer := radius
 	position.x = clampf(position.x, GameManager.bounds_min_x + buffer, GameManager.bounds_max_x - buffer)
 	position.y = clampf(position.y, GameManager.bounds_min_y + buffer, GameManager.bounds_max_y - buffer)
-	server_position.x = clampf(server_position.x, GameManager.bounds_min_x + buffer, GameManager.bounds_max_x - buffer)
-	server_position.y = clampf(server_position.y, GameManager.bounds_min_y + buffer, GameManager.bounds_max_y - buffer)
+
+	# Smoothly interpolate toward server-authoritative position
+	# server_position is ONLY updated by server messages, not predicted locally
+	position += (server_position - position) * 0.05
 
 	if not is_player:
 		return
