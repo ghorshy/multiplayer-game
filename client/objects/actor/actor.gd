@@ -75,13 +75,21 @@ func _physics_process(delta: float) -> void:
 	position += velocity * delta
 	server_position += velocity * delta
 	position += (server_position - position) * 0.05
-	
+
+	# Enforce world boundaries - clamp position to stay within bounds
+	# Account for actor radius to prevent the edge going beyond bounds
+	var buffer := radius
+	position.x = clampf(position.x, GameManager.bounds_min_x + buffer, GameManager.bounds_max_x - buffer)
+	position.y = clampf(position.y, GameManager.bounds_min_y + buffer, GameManager.bounds_max_y - buffer)
+	server_position.x = clampf(server_position.x, GameManager.bounds_min_x + buffer, GameManager.bounds_max_x - buffer)
+	server_position.y = clampf(server_position.y, GameManager.bounds_min_y + buffer, GameManager.bounds_max_y - buffer)
+
 	if not is_player:
 		return
-		
+
 	# Player-specific stuff
 	var mouse_pos := get_global_mouse_position()
-	
+
 	var input_vec := position.direction_to(mouse_pos).normalized()
 	if abs(velocity.angle_to(input_vec)) > TAU / 30: # 12 degrees
 		velocity = input_vec * speed

@@ -2,8 +2,16 @@ package objects
 
 import "math/rand/v2"
 
+// Game world boundaries - players and spores cannot go beyond these coordinates
+const (
+	MinX float64 = -3000
+	MaxX float64 = 3000
+	MinY float64 = -3000
+	MaxY float64 = 3000
+)
+
 func SpawnCoords(radius float64, playersToAvoid *SharedCollection[*Player], sporesToAvoid *SharedCollection[*Spore]) (float64, float64) {
-	var bound float64 = 3000
+	bound := MaxX // Use the boundary constant instead of hardcoded value
 	const maxTries int = 25
 
 	tries := 0

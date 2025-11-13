@@ -42,6 +42,8 @@ func _on_ws_packet_received(packet: packets.Packet) -> void:
 		_handle_spore_consumed_msg(sender_id, packet.get_spore_consumed())
 	elif packet.has_disconnect():
 		_handle_disconnect_msg(sender_id, packet.get_disconnect())
+	elif packet.has_game_bounds():
+		_handle_game_bounds_msg(sender_id, packet.get_game_bounds())
 
 
 func _handle_chat_msg(sender_id: int, chat_msg: packets.ChatMessage) -> void:
@@ -226,3 +228,15 @@ func _remove_actor(actor: Actor) -> void:
 	_players.erase(actor.actor_id)
 	actor.queue_free()
 	hiscores.remove_hiscore(actor.actor_name)
+
+
+func _handle_game_bounds_msg(sender_id: int, bounds_msg: packets.GameBoundsMessage) -> void:
+	# Update the global game boundaries from the server
+	GameManager.bounds_min_x = bounds_msg.get_min_x()
+	GameManager.bounds_max_x = bounds_msg.get_max_x()
+	GameManager.bounds_min_y = bounds_msg.get_min_y()
+	GameManager.bounds_max_y = bounds_msg.get_max_y()
+	_log.info("Game boundaries set: X[%.0f, %.0f], Y[%.0f, %.0f]" % [
+		GameManager.bounds_min_x, GameManager.bounds_max_x,
+		GameManager.bounds_min_y, GameManager.bounds_max_y
+	])

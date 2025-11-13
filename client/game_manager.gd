@@ -17,6 +17,12 @@ var states_scenes: Dictionary[State, String] = {
 var client_id: int
 var current_scene_root: Node
 
+# Game world boundaries received from server
+var bounds_min_x: float = -3000.0
+var bounds_max_x: float = 3000.0
+var bounds_min_y: float = -3000.0
+var bounds_max_y: float = 3000.0
+
 
 func set_state(state: State) -> void:
 	if current_scene_root != null:

@@ -78,6 +78,12 @@ func (g *InGame) syncPlayer(delta float64) {
 	newX := g.player.X + g.player.Speed*math.Cos(g.player.Direction)*delta
 	newY := g.player.Y + g.player.Speed*math.Sin(g.player.Direction)*delta
 
+	// Enforce world boundaries - clamp position to stay within bounds
+	// Account for player radius to prevent center going beyond bounds
+	buffer := g.player.Radius
+	newX = math.Max(objects.MinX+buffer, math.Min(objects.MaxX-buffer, newX))
+	newY = math.Max(objects.MinY+buffer, math.Min(objects.MaxY-buffer, newY))
+
 	g.player.X = newX
 	g.player.Y = newY
 
@@ -162,6 +168,9 @@ func (g *InGame) OnEnter() {
 	g.player.X, g.player.Y = objects.SpawnCoords(g.player.Radius, g.client.SharedGameObjects().Players, nil)
 
 	g.logger.Printf("Player spawned at position (%.2f, %.2f) with radius %.2f", g.player.X, g.player.Y, g.player.Radius)
+
+	// Send game boundaries to the client so it can enforce them locally
+	g.client.SocketSend(packets.NewGameBounds(objects.MinX, objects.MaxX, objects.MinY, objects.MaxY))
 
 	// Send the player's initial state to the client
 	g.client.SocketSend(packets.NewPlayer(g.client.Id(), g.player))

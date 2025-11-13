@@ -91,3 +91,14 @@ func NewDisconnect(reason string) Msg {
 		},
 	}
 }
+
+func NewGameBounds(minX, maxX, minY, maxY float64) Msg {
+	return &Packet_GameBounds{
+		GameBounds: &GameBoundsMessage{
+			MinX: minX,
+			MaxX: maxX,
+			MinY: minY,
+			MaxY: maxY,
+		},
+	}
+}

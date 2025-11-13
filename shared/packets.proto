@@ -78,6 +78,13 @@ message DisconnectMessage {
   string reason = 1;
 }
 
+message GameBoundsMessage {
+  double min_x = 1;
+  double max_x = 2;
+  double min_y = 3;
+  double max_y = 4;
+}
+
 message Packet {
   uint64 sender_id = 1;
   oneof msg {
@@ -99,5 +106,6 @@ message Packet {
     FinishedBrowsingHiscoresMessage finished_browsing_hiscores = 17;
     SearchHiscoreMessage search_hiscore = 18;
     DisconnectMessage disconnect = 19;
+    GameBoundsMessage game_bounds = 20;
   }
 }
