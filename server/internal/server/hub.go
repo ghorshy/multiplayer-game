@@ -34,9 +34,15 @@ func (h *Hub) replenishSporesLoop(rate time.Duration) {
 			spore := h.newSpore()
 			sporeId := h.SharedGameObjects.Spores.Add(spore)
 
-			h.BroadcastChan <- &packets.Packet{
+			// Non-blocking send to avoid deadlock
+			packet := &packets.Packet{
 				SenderId: 0,
 				Msg:      packets.NewSpore(sporeId, spore),
+			}
+			select {
+			case h.BroadcastChan <- packet:
+			default:
+				log.Printf("BroadcastChan full, dropping spore spawn notification for spore %d", sporeId)
 			}
 
 			// sleep to avoid lag spikes
@@ -163,9 +169,9 @@ func NewHub(databaseURL string) *Hub {
 
 	return &Hub{
 		Clients:        objects.NewSharedCollection[ClientInterfacer](),
-		BroadcastChan:  make(chan *packets.Packet),
-		RegisterChan:   make(chan ClientInterfacer),
-		UnregisterChan: make(chan ClientInterfacer),
+		BroadcastChan:  make(chan *packets.Packet, 2000), // Buffered to handle bursts
+		RegisterChan:   make(chan ClientInterfacer, 100),
+		UnregisterChan: make(chan ClientInterfacer, 100),
 		dbPool:         dbPool,
 		SharedGameObjects: &SharedGameObjects{
 			Players: objects.NewSharedCollection[*objects.Player](),
@@ -188,6 +194,10 @@ func (h *Hub) Run() {
 	go h.replenishSporesLoop(2 * time.Second)
 
 	log.Println("Awaiting client registrations")
+
+	// Start monitoring goroutine for channel health
+	go h.monitorChannelHealth()
+
 	for {
 		select {
 		case client := <-h.RegisterChan:
@@ -200,6 +210,27 @@ func (h *Hub) Run() {
 					client.ProcessMessage(packet.SenderId, packet.Msg)
 				}
 			})
+		}
+	}
+}
+
+func (h *Hub) monitorChannelHealth() {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		broadcastLen := len(h.BroadcastChan)
+		registerLen := len(h.RegisterChan)
+		unregisterLen := len(h.UnregisterChan)
+
+		if broadcastLen > 1500 { // 75% of 2000
+			log.Printf("WARNING: BroadcastChan is %d/2000 (%.1f%% full)", broadcastLen, float64(broadcastLen)/20.0)
+		}
+		if registerLen > 75 { // 75% of 100
+			log.Printf("WARNING: RegisterChan is %d/100 full", registerLen)
+		}
+		if unregisterLen > 75 { // 75% of 100
+			log.Printf("WARNING: UnregisterChan is %d/100 full", unregisterLen)
 		}
 	}
 }

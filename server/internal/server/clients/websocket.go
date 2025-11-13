@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"server/internal/server"
 	"server/internal/server/states"
@@ -14,13 +15,15 @@ import (
 )
 
 type WebSocketClient struct {
-	id       uint64
-	conn     *websocket.Conn
-	hub      *server.Hub
-	dbTx     *server.DbTx
-	state    server.ClientStateHandler
-	sendChan chan *packets.Packet
-	logger   *log.Logger
+	id         uint64
+	conn       *websocket.Conn
+	hub        *server.Hub
+	dbTx       *server.DbTx
+	state      server.ClientStateHandler
+	sendChan   chan *packets.Packet
+	logger     *log.Logger
+	closeOnce  sync.Once
+	closeChan  chan struct{}
 }
 
 func NewWebSocketClient(hub *server.Hub, writer http.ResponseWriter, request *http.Request) (server.ClientInterfacer, error) {
@@ -37,11 +40,12 @@ func NewWebSocketClient(hub *server.Hub, writer http.ResponseWriter, request *ht
 	}
 
 	c := &WebSocketClient{
-		hub:      hub,
-		conn:     conn,
-		dbTx:     hub.NewDbTx(),
-		sendChan: make(chan *packets.Packet, 256),
-		logger:   log.New(log.Writer(), "Client unknown: ", log.LstdFlags),
+		hub:       hub,
+		conn:      conn,
+		dbTx:      hub.NewDbTx(),
+		sendChan:  make(chan *packets.Packet, 256),
+		logger:    log.New(log.Writer(), "Client unknown: ", log.LstdFlags),
+		closeChan: make(chan struct{}),
 	}
 
 	return c, nil
@@ -110,7 +114,11 @@ func (c *WebSocketClient) PassToPeer(message packets.Msg, peerId uint64) {
 }
 
 func (c *WebSocketClient) Broadcast(message packets.Msg) {
-	c.hub.BroadcastChan <- &packets.Packet{SenderId: c.id, Msg: message}
+	select {
+	case c.hub.BroadcastChan <- &packets.Packet{SenderId: c.id, Msg: message}:
+	default:
+		c.logger.Printf("BroadcastChan full, dropping message: %T", message)
+	}
 }
 
 func (c *WebSocketClient) ReadPump() {
@@ -180,14 +188,22 @@ func (c *WebSocketClient) WritePump() {
 }
 
 func (c *WebSocketClient) Close(reason string) {
-	c.Broadcast(packets.NewDisconnect(reason))
-	c.logger.Printf("Closing client connection because: %s", reason)
+	c.closeOnce.Do(func() {
+		c.Broadcast(packets.NewDisconnect(reason))
+		c.logger.Printf("Closing client connection because: %s", reason)
 
-	c.SetState(nil)
+		c.SetState(nil)
 
-	c.hub.UnregisterChan <- c
-	c.conn.Close()
-	if _, closed := <-c.sendChan; !closed {
-		close(c.sendChan)
-	}
+		// Non-blocking send to UnregisterChan
+		select {
+		case c.hub.UnregisterChan <- c:
+		default:
+			c.logger.Printf("UnregisterChan full, forcing unregister in goroutine")
+			go func() { c.hub.UnregisterChan <- c }()
+		}
+
+		c.conn.Close()
+		close(c.closeChan) // Signal that we're closing
+		close(c.sendChan)  // Safe because closeOnce guarantees single execution
+	})
 }
