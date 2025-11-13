@@ -47,7 +47,8 @@ func (b *BrowsingHiscores) OnExit() {
 }
 
 func (b *BrowsingHiscores) handleFinishedBrowsingHiscores(_ uint64, _ *packets.Packet_FinishedBrowsingHiscores) {
-	b.client.SetState(&Connected{})
+	// SetState in goroutine to avoid blocking Hub
+	go b.client.SetState(&Connected{})
 }
 
 func (b *BrowsingHiscores) handleSearchHiscore(_ uint64, message *packets.Packet_SearchHiscore) {

@@ -89,7 +89,8 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
 		return
 	}
 
-	c.client.SetState(&InGame{
+	// SetState in goroutine to avoid blocking Hub
+	go c.client.SetState(&InGame{
 		player: &objects.Player{
 			Name:      player.Name,
 			DbId:      player.ID,
@@ -160,7 +161,8 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 }
 
 func (c *Connected) handleHiscoreBoardRequest(senderId uint64, _ *packets.Packet_HiScoreBoardRequest) {
-	c.client.SetState(&BrowsingHiscores{})
+	// SetState in goroutine to avoid blocking Hub
+	go c.client.SetState(&BrowsingHiscores{})
 }
 
 func validateUsername(username string) error {

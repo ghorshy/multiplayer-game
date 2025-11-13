@@ -301,7 +301,8 @@ func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_P
 
 		if message.PlayerConsumed.PlayerId == g.client.Id() {
 			log.Println("Player was consumed, respawning")
-			g.client.SetState(&InGame{
+			// SetState in goroutine to avoid blocking Hub
+			go g.client.SetState(&InGame{
 				player: &objects.Player{
 					Name: g.player.Name,
 				},
@@ -348,7 +349,8 @@ func (g *InGame) handleSpore(senderId uint64, message *packets.Packet_Spore) {
 func (g *InGame) handleDisconnect(senderId uint64, message *packets.Packet_Disconnect) {
 	if senderId == g.client.Id() {
 		g.client.Broadcast(message)
-		g.client.SetState(&Connected{})
+		// SetState in goroutine to avoid blocking Hub
+		go g.client.SetState(&Connected{})
 	} else {
 		go g.client.SocketSendAs(message, senderId)
 	}
