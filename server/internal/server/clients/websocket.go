@@ -44,7 +44,7 @@ func NewWebSocketClient(hub *server.Hub, writer http.ResponseWriter, request *ht
 		hub:       hub,
 		conn:      conn,
 		dbTx:      hub.NewDbTx(),
-		sendChan:  make(chan *packets.Packet, 256),
+		sendChan:  make(chan *packets.Packet, 1024), // Increased from 256 to handle high-score message bursts
 		logger:    log.New(log.Writer(), "Client unknown: ", log.LstdFlags),
 		closeChan: make(chan struct{}),
 	}

@@ -26,6 +26,8 @@ func _ready() -> void:
 
 func _on_ws_connection_closed() -> void:
 	_log.error("Connection closed")
+	_cleanup()
+	GameManager.set_state(GameManager.State.ENTERED)
 
 
 func _on_ws_packet_received(packet: packets.Packet) -> void:
@@ -165,9 +167,18 @@ func _handle_spores_batch_msg(sender_id: int, spores_batch_msg: packets.SporesBa
 		
 		
 func _handle_disconnect_msg(sender_id: int, disconnect_msg: packets.DisconnectMessage) -> void:
+	var reason := disconnect_msg.get_reason()
+
+	# If we received our own disconnect message, cleanup and return to menu
+	if sender_id == GameManager.client_id:
+		_log.info("Disconnected: %s" % reason)
+		_cleanup()
+		GameManager.set_state(GameManager.State.ENTERED)
+		return
+
+	# Otherwise it's another player disconnecting
 	if sender_id in _players:
 		var player := _players[sender_id]
-		var reason := disconnect_msg.get_reason()
 		_log.info("%s disconnected because %s" % [player.actor_name, reason])
 		_remove_actor(player)
 
@@ -197,7 +208,20 @@ func _on_logout_button_pressed() -> void:
 	var disconnect_msg := packet.new_disconnect()
 	disconnect_msg.set_reason("logged out")
 	WS.send(packet)
+	_cleanup()
 	GameManager.set_state(GameManager.State.CONNECTED)
+
+
+func _cleanup() -> void:
+	# Explicitly free all spores and players before transitioning state
+	# This prevents memory buildup when disconnecting with high scores
+	for spore in _spores.values():
+		spore.free()  # Immediate deletion instead of queue_free()
+	_spores.clear()
+
+	for player in _players.values():
+		player.free()  # Immediate deletion instead of queue_free()
+	_players.clear()
 		
 		
 func _on_send_button_pressed() -> void:

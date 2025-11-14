@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"server/internal/server"
 	"server/internal/server/db"
 	"server/internal/server/objects"
@@ -129,7 +128,7 @@ func (g *InGame) syncPlayer(delta float64) {
 		newY -= pushBack
 	}
 
-	// Update player position
+	// Update player position (with rubber-band applied)
 	g.player.X = newX
 	g.player.Y = newY
 
@@ -138,25 +137,9 @@ func (g *InGame) syncPlayer(delta float64) {
 		g.logger.Printf("First position update: (%.2f, %.2f) -> (%.2f, %.2f)", oldX, oldY, newX, newY)
 	}
 
-	// Drop spores at the clamped position (after boundary enforcement)
-	probability := g.player.Radius / float64(server.MaxSpores*5)
-	if rand.Float64() < probability && g.player.Radius > 10 {
-		spore := &objects.Spore{
-			X:         g.player.X,  // Now uses the clamped position
-			Y:         g.player.Y,  // Now uses the clamped position
-			Radius:    min(5+g.player.Radius/50, 15),
-			DroppedBy: g.player,
-			DroppedAt: time.Now(),
-		}
-		sporeId := g.client.SharedGameObjects().Spores.Add(spore)
-		g.client.Broadcast(packets.NewSpore(sporeId, spore))
-		go g.client.SocketSend(packets.NewSpore(sporeId, spore))
-		g.player.Radius = g.nextRadius(-radToMass(spore.Radius))
-	}
-
 	updatePacket := packets.NewPlayer(g.client.Id(), g.player)
 	g.client.Broadcast(updatePacket)
-	go g.client.SocketSend(updatePacket)
+	g.client.SocketSend(updatePacket)
 }
 
 func (g *InGame) bestScoreSyncLoop(ctx context.Context) {
