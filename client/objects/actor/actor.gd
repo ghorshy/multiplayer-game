@@ -25,10 +25,14 @@ var radius: float:
 var target_zoom := 2.0
 var furthest_zoom_allowed := target_zoom
 var server_position: Vector2
+var time_offset: float = 0.0
 
 @onready var label: Label = $Label
 @onready var camera_2d: Camera2D = $Camera2D
 @onready var collision_shape_2d: CircleShape2D = $CollisionShape2D.shape
+
+# Shader material for floaty effect
+var shader_material: ShaderMaterial
 
 static func instantiate(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, color: Color, is_player: bool) -> Actor:
 	var actor := Scene.instantiate()
@@ -61,9 +65,19 @@ func _ready() -> void:
 	server_position = position
 	velocity = Vector2.RIGHT * speed
 	radius = start_rad
-	
+
 	collision_shape_2d.radius = radius
 	label.text = actor_name
+	time_offset = randf() * TAU  # Random phase offset for each actor
+
+	# Only apply shader to other players, not the local player
+	if not is_player:
+		var shader = load("res://objects/actor/floaty.gdshader")
+		shader_material = ShaderMaterial.new()
+		shader_material.shader = shader
+		shader_material.set_shader_parameter("phase_offset", time_offset)
+		shader_material.set_shader_parameter("random_seed", randf() * 1000.0)
+		material = shader_material
 	
 	
 func _process(_delta: float) -> void:
