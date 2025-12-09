@@ -20,6 +20,7 @@ func _ready() -> void:
 	WS.packet_received.connect(_on_ws_packet_received)
 
 	_line_edit.text_submitted.connect(_on_line_edit_text_entered)
+	_line_edit.gui_input.connect(_on_line_edit_gui_input)
 	logout_button.pressed.connect(_on_logout_button_pressed)
 	send_button.pressed.connect(_on_send_button_pressed)
 
@@ -183,11 +184,18 @@ func _handle_disconnect_msg(sender_id: int, disconnect_msg: packets.DisconnectMe
 		_remove_actor(player)
 
 	
+func _on_line_edit_gui_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ENTER:
+		if _line_edit.text.strip_edges() != "":
+			_on_line_edit_text_entered(_line_edit.text)
+		get_viewport().set_input_as_handled()
+
+
 func _on_line_edit_text_entered(text: String) -> void:
 	var packet := packets.Packet.new()
 	var chat_msg := packet.new_chat()
 	chat_msg.set_msg(text)
-	
+
 	var err := WS.send(packet)
 	if err:
 		_log.error("Error sending chat message")

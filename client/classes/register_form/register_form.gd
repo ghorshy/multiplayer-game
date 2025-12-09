@@ -17,6 +17,9 @@ signal form_cancelled()
 func _ready() -> void:
 	register_button.pressed.connect(_on_register_button_pressed)
 	cancel_button.pressed.connect(_on_cancel_button_pressed)
+	username_field.text_submitted.connect(_on_field_submitted)
+	password_field.text_submitted.connect(_on_field_submitted)
+	confirm_password_field.text_submitted.connect(_on_field_submitted)
 	
 	
 func _on_register_button_pressed() -> void:
@@ -25,3 +28,7 @@ func _on_register_button_pressed() -> void:
 
 func _on_cancel_button_pressed() -> void:
 	form_cancelled.emit()
+
+
+func _on_field_submitted(_text: String) -> void:
+	_on_register_button_pressed()

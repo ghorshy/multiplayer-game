@@ -3,7 +3,8 @@ extends RichTextLabel
 
 
 func _message(message: String, color: Color = Color.WHITE) -> void:
-	append_text("[color=#%s]%s[/color]\n" % [color.to_html(false), str(message)])
+	var new_message = "[color=#%s]%s[/color]\n" % [color.to_html(false), str(message)]
+	text = new_message + text
 	
 	
 func info(message: String) -> void:

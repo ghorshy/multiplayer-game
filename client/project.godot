@@ -38,3 +38,4 @@ enabled=PackedStringArray("res://addons/protobuf/plugin.cfg")
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.1728327, 0.17283267, 0.17283267, 1)
