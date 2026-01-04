@@ -52,7 +52,11 @@ func _on_register_form_submitted(username: String, password: String, confirm_pas
 	register_request_msg.set_password(password)
 	register_request_msg.set_color(color.to_rgba32())
 	WS.send(packet)
-	_action_on_ok_received = func() -> void: _log.success("Registration successful! Go back and log in with your new account.")
+	_action_on_ok_received = func() -> void:
+		_log.success("Registration successful! You can now log in.")
+		register_form.hide()
+		login_form.show()
+		register_prompt.show()
 
 
 func _on_register_form_cancelled() -> void:
