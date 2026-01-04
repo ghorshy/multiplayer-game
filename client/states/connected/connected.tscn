@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://d05wbkrwbasxi"]
+[gd_scene load_steps=7 format=3 uid="uid://d05wbkrwbasxi"]
 
 [ext_resource type="Script" uid="uid://n8b0e4aako3j" path="res://states/connected/connected.gd" id="1_idi6s"]
 [ext_resource type="Script" uid="uid://qms7yu0yo86t" path="res://classes/log/log.gd" id="1_jx7w3"]
 [ext_resource type="PackedScene" uid="uid://de1d3yiee0ar8" path="res://classes/login_form/login_form.tscn" id="2_kh2bm"]
 [ext_resource type="PackedScene" uid="uid://wmg25wpbvlp5" path="res://classes/register_form/register_form.tscn" id="3_x7iwh"]
+[ext_resource type="Texture2D" uid="uid://v8hun2nit7o3" path="res://resources/grid.svg" id="5_tk3qr"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_x7iwh"]
 font_size = 24
@@ -34,7 +35,7 @@ theme_override_constants/separation = 16
 
 [node name="Label" type="Label" parent="UI/MarginContainer/VBoxContainer2"]
 layout_mode = 2
-text = "Multiplayer Game Prototype of this type"
+text = "The Web Multiplayer Game"
 label_settings = SubResource("LabelSettings_x7iwh")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/MarginContainer/VBoxContainer2"]
@@ -65,3 +66,12 @@ layout_mode = 2
 scroll_following = true
 script = ExtResource("1_jx7w3")
 metadata/_custom_type_script = "uid://qms7yu0yo86t"
+
+[node name="Background" type="Sprite2D" parent="UI/MarginContainer/VBoxContainer2"]
+modulate = Color(0.54901963, 0.54901963, 0.54901963, 0.2)
+z_index = -1
+texture_repeat = 2
+scale = Vector2(1.2, 1.2)
+texture = ExtResource("5_tk3qr")
+region_enabled = true
+region_rect = Rect2(0, 0, 10000, 10000)
