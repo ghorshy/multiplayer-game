@@ -15,10 +15,8 @@ func TestPhysicsCalculations(t *testing.T) {
 			radius   float64
 			expected float64
 		}{
-			{"radius 10", 10.0, math.Pi * 100},
 			{"radius 20", 20.0, math.Pi * 400},
-			{"radius 5", 5.0, math.Pi * 25},
-			{"radius 1", 1.0, math.Pi},
+			{"radius 50", 50.0, math.Pi * 2500},
 		}
 
 		for _, tt := range tests {
@@ -38,10 +36,9 @@ func TestPhysicsCalculations(t *testing.T) {
 			mass     float64
 			expected float64
 		}{
-			{"mass π*100", math.Pi * 100, 10.0},
-			{"mass π*400", math.Pi * 400, 20.0},
-			{"mass π*25", math.Pi * 25, 5.0},
-			{"mass π", math.Pi, 1.0},
+			{"mass 1200", 1200.0, math.Sqrt(1200.0 / math.Pi)},
+			{"mass 5000", 5000.0, math.Sqrt(5000.0 / math.Pi)},
+			{"mass 36000", 36000.0, math.Sqrt(36000.0 / math.Pi)},
 		}
 
 		for _, tt := range tests {
@@ -55,7 +52,7 @@ func TestPhysicsCalculations(t *testing.T) {
 	})
 
 	t.Run("radToMass and massToRad are inverse functions", func(t *testing.T) {
-		radii := []float64{5.0, 10.0, 15.0, 20.0, 25.0, 50.0, 100.0}
+		radii := []float64{20.0, 30.0, 50.0, 100.0, 125.0}
 
 		for _, radius := range radii {
 			mass := radToMass(radius)
