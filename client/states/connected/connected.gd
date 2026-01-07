@@ -33,6 +33,10 @@ func _on_ws_connection_closed() -> void:
 	
 
 func _on_login_form_submitted(username: String, password: String) -> void:
+	if password.is_empty():
+		_log.error("Password cannot be empty")
+		return
+
 	var packet := packets.Packet.new()
 	var login_request_msg := packet.new_login_request()
 	login_request_msg.set_username(username)
@@ -42,6 +46,10 @@ func _on_login_form_submitted(username: String, password: String) -> void:
 
 
 func _on_register_form_submitted(username: String, password: String, confirm_password: String, color: Color) -> void:
+	if password.is_empty():
+		_log.error("Password cannot be empty")
+		return
+
 	if password != confirm_password:
 		_log.error("Passwords do not match")
 		return

@@ -61,8 +61,15 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
 	}
 
 	username := message.LoginRequest.Username
+	password := message.LoginRequest.Password
 
 	genericFallMessage := packets.NewDenyResponse("Incorrect username or password")
+
+	if len(password) == 0 {
+		c.logger.Printf("Empty password attempt for user: %s", username)
+		c.client.SocketSend(genericFallMessage)
+		return
+	}
 
 	user, err := c.queries.GetUserByUsername(c.dbCtx, strings.ToLower(username))
 	if err != nil {
@@ -71,7 +78,7 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(message.LoginRequest.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
 		c.logger.Printf("User entered wrong password: %s", username)
 		c.client.SocketSend(genericFallMessage)
@@ -110,6 +117,14 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 	err := validateUsername(message.RegisterRequest.Username)
 	if err != nil {
 		reason := fmt.Sprintf("Invalid username: %v", err)
+		c.logger.Println(reason)
+		c.client.SocketSend(packets.NewDenyResponse(reason))
+		return
+	}
+
+	err = validatePassword(message.RegisterRequest.Password)
+	if err != nil {
+		reason := fmt.Sprintf("Invalid password: %v", err)
 		c.logger.Println(reason)
 		c.client.SocketSend(packets.NewDenyResponse(reason))
 		return
@@ -173,6 +188,13 @@ func validateUsername(username string) error {
 	}
 	if username != strings.TrimSpace(username) {
 		return errors.New("leading or trailing whitespace")
+	}
+	return nil
+}
+
+func validatePassword(password string) error {
+	if len(password) == 0 {
+		return errors.New("password cannot be empty")
 	}
 	return nil
 }
