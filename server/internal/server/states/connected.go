@@ -155,9 +155,8 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 		return
 	}
 
-	c.client.SocketSend(packets.NewOkResponse())
-
 	c.logger.Printf("User %s registered successfully", username)
+	c.client.SocketSend(packets.NewOkResponse())
 }
 
 func (c *Connected) handleHiscoreBoardRequest(senderId uint64, _ *packets.Packet_HiScoreBoardRequest) {
