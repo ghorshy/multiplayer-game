@@ -8,8 +8,6 @@ import (
 // TestPlayerConsumption tests the logic for player eating other players
 func TestPlayerConsumption(t *testing.T) {
 	t.Run("Player with mass 100 CAN eat player with mass 50", func(t *testing.T) {
-		// Gracz z masą 100 vs gracz z masą 50
-		// 100 > 50 * 1.5 (czyli 100 > 75) ✓
 		ourMass := 100.0
 		otherMass := 50.0
 
@@ -21,8 +19,6 @@ func TestPlayerConsumption(t *testing.T) {
 	})
 
 	t.Run("Player with mass 100 CANNOT eat player with mass 80", func(t *testing.T) {
-		// Gracz z masą 100 vs gracz z masą 80
-		// 100 > 80 * 1.5 (czyli 100 > 120) ✗
 		ourMass := 100.0
 		otherMass := 80.0
 
@@ -34,11 +30,9 @@ func TestPlayerConsumption(t *testing.T) {
 	})
 
 	t.Run("Exact threshold test - mass exactly 1.5x", func(t *testing.T) {
-		// Gracz z masą dokładnie 1.5x masa targetu
 		otherMass := 100.0
-		ourMass := otherMass * 1.5 // = 150
+		ourMass := otherMass * 1.5
 
-		// 150 > 150 ✗ (musi być WIĘKSZE, nie równe)
 		canConsume := ourMass > otherMass*1.5
 
 		if canConsume {
@@ -48,7 +42,7 @@ func TestPlayerConsumption(t *testing.T) {
 
 	t.Run("Just above threshold - can consume", func(t *testing.T) {
 		otherMass := 100.0
-		ourMass := otherMass*1.5 + 0.01 // Trochę powyżej progu
+		ourMass := otherMass*1.5 + 0.01
 
 		canConsume := ourMass > otherMass*1.5
 
@@ -58,14 +52,12 @@ func TestPlayerConsumption(t *testing.T) {
 	})
 
 	t.Run("Converting radius to mass for consumption check", func(t *testing.T) {
-		// Test z promieniami, tak jak w grze
 		ourRadius := 20.0
 		otherRadius := 10.0
 
-		ourMass := radToMass(ourRadius)     // π * 400 ≈ 1256.6
-		otherMass := radToMass(otherRadius) // π * 100 ≈ 314.16
+		ourMass := radToMass(ourRadius)
+		otherMass := radToMass(otherRadius)
 
-		// 1256.6 > 314.16 * 1.5 (czyli 1256.6 > 471.24) ✓
 		canConsume := ourMass > otherMass*1.5
 
 		if !canConsume {
@@ -87,7 +79,7 @@ func TestPlayerConsumption(t *testing.T) {
 
 	t.Run("Small advantage not enough - 1.3x mass ratio", func(t *testing.T) {
 		otherMass := 100.0
-		ourMass := otherMass * 1.3 // = 130, ale potrzeba > 150
+		ourMass := otherMass * 1.3
 
 		canConsume := ourMass > otherMass*1.5
 
@@ -98,7 +90,7 @@ func TestPlayerConsumption(t *testing.T) {
 
 	t.Run("Large mass advantage - 2x mass ratio", func(t *testing.T) {
 		otherMass := 100.0
-		ourMass := otherMass * 2.0 // = 200, znacznie powyżej 150
+		ourMass := otherMass * 2.0
 
 		canConsume := ourMass > otherMass*1.5
 
@@ -111,10 +103,9 @@ func TestPlayerConsumption(t *testing.T) {
 		ourRadius := 5.0
 		otherRadius := 3.0
 
-		ourMass := radToMass(ourRadius)     // π * 25 ≈ 78.54
-		otherMass := radToMass(otherRadius) // π * 9 ≈ 28.27
+		ourMass := radToMass(ourRadius)
+		otherMass := radToMass(otherRadius)
 
-		// 78.54 > 28.27 * 1.5 (czyli 78.54 > 42.41) ✓
 		canConsume := ourMass > otherMass*1.5
 
 		if !canConsume {
@@ -124,7 +115,6 @@ func TestPlayerConsumption(t *testing.T) {
 	})
 
 	t.Run("Mass formula verification: mass >= 1.5 × masa_target", func(t *testing.T) {
-		// Test cases weryfikujące wzór
 		testCases := []struct {
 			ourMass   float64
 			otherMass float64

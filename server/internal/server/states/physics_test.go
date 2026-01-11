@@ -9,7 +9,6 @@ import (
 // TestPhysicsCalculations tests physics formulas for mass and radius
 func TestPhysicsCalculations(t *testing.T) {
 	t.Run("radToMass calculation", func(t *testing.T) {
-		// masa = π × promień²
 		tests := []struct {
 			name     string
 			radius   float64
@@ -30,7 +29,6 @@ func TestPhysicsCalculations(t *testing.T) {
 	})
 
 	t.Run("massToRad calculation", func(t *testing.T) {
-		// promień = sqrt(masa / π)
 		tests := []struct {
 			name     string
 			mass     float64
@@ -65,17 +63,15 @@ func TestPhysicsCalculations(t *testing.T) {
 	})
 
 	t.Run("nextRadius after consumption", func(t *testing.T) {
-		// Symulacja: gracz z promieniem 20 zjada spore z promieniem 5
 		game := &InGame{
 			player: &objects.Player{
 				Radius: 20.0,
 			},
 		}
 
-		sporeMass := radToMass(5.0) // masa spore
+		sporeMass := radToMass(5.0)
 		newRadius := game.nextRadius(sporeMass)
 
-		// Oczekiwana masa: masa_gracza + masa_spore
 		expectedMass := radToMass(20.0) + radToMass(5.0)
 		expectedRadius := massToRad(expectedMass)
 
