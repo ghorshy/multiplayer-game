@@ -141,7 +141,7 @@ class PBField:
 		tag = a_tag
 		option_packed = packed
 		value = a_value
-		
+
 	var name : String
 	var type : int
 	var rule : int
@@ -544,7 +544,7 @@ class PBPacker:
 					elif res < 0:
 						return res
 					else:
-						break							
+						break
 			else:
 				return offset
 		return PB_ERR.UNDEFINED_STATE
@@ -585,13 +585,13 @@ class PBPacker:
 		for kv in key_values:
 			result[kv.get_key()] = kv.get_value()
 		return result
-	
+
 	static func tabulate(text : String, nesting : int) -> String:
 		var tab : String = ""
 		for _i in range(nesting):
 			tab += DEBUG_TAB
 		return tab + text
-	
+
 	static func value_to_string(value, field : PBField, nesting : int) -> String:
 		var result : String = ""
 		var text : String
@@ -620,7 +620,7 @@ class PBPacker:
 		else:
 			result += str(value)
 		return result
-	
+
 	static func field_to_string(field : PBField, nesting : int) -> String:
 		var result : String = tabulate(field.name + ": ", nesting)
 		if field.type == PB_DATA_TYPE.MAP:
@@ -657,7 +657,7 @@ class PBPacker:
 			result += value_to_string(field.value, field, nesting)
 		result += ";\n"
 		return result
-		
+
 	static func message_to_string(data, nesting : int = 0) -> String:
 		var DEFAULT_VALUES
 		if PROTO_VERSION == 2:
@@ -689,14 +689,14 @@ class PBPacker:
 class ChatMessage:
 	func _init():
 		var service
-		
+
 		__msg = PBField.new("msg", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __msg
 		data[__msg.tag] = service
-		
+
 	var data = {}
-	
+
 	var __msg: PBField
 	func has_msg() -> bool:
 		if __msg.value != null:
@@ -709,13 +709,13 @@ class ChatMessage:
 		__msg.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_msg(value : String) -> void:
 		__msg.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -730,18 +730,18 @@ class ChatMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class IdMessage:
 	func _init():
 		var service
-		
+
 		__id = PBField.new("id", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __id
 		data[__id.tag] = service
-		
+
 	var data = {}
-	
+
 	var __id: PBField
 	func has_id() -> bool:
 		if __id.value != null:
@@ -754,13 +754,13 @@ class IdMessage:
 		__id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_id(value : int) -> void:
 		__id.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -775,23 +775,23 @@ class IdMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class LoginRequestMessage:
 	func _init():
 		var service
-		
+
 		__username = PBField.new("username", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __username
 		data[__username.tag] = service
-		
+
 		__password = PBField.new("password", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __password
 		data[__password.tag] = service
-		
+
 	var data = {}
-	
+
 	var __username: PBField
 	func has_username() -> bool:
 		if __username.value != null:
@@ -804,7 +804,7 @@ class LoginRequestMessage:
 		__username.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_username(value : String) -> void:
 		__username.value = value
-	
+
 	var __password: PBField
 	func has_password() -> bool:
 		if __password.value != null:
@@ -817,13 +817,13 @@ class LoginRequestMessage:
 		__password.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_password(value : String) -> void:
 		__password.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -838,28 +838,28 @@ class LoginRequestMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class RegisterRequestMessage:
 	func _init():
 		var service
-		
+
 		__username = PBField.new("username", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __username
 		data[__username.tag] = service
-		
+
 		__password = PBField.new("password", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __password
 		data[__password.tag] = service
-		
+
 		__color = PBField.new("color", PB_DATA_TYPE.INT32, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT32])
 		service = PBServiceField.new()
 		service.field = __color
 		data[__color.tag] = service
-		
+
 	var data = {}
-	
+
 	var __username: PBField
 	func has_username() -> bool:
 		if __username.value != null:
@@ -872,7 +872,7 @@ class RegisterRequestMessage:
 		__username.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_username(value : String) -> void:
 		__username.value = value
-	
+
 	var __password: PBField
 	func has_password() -> bool:
 		if __password.value != null:
@@ -885,7 +885,7 @@ class RegisterRequestMessage:
 		__password.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_password(value : String) -> void:
 		__password.value = value
-	
+
 	var __color: PBField
 	func has_color() -> bool:
 		if __color.value != null:
@@ -898,13 +898,13 @@ class RegisterRequestMessage:
 		__color.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT32]
 	func set_color(value : int) -> void:
 		__color.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -919,19 +919,19 @@ class RegisterRequestMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class OkResponseMessage:
 	func _init():
 		var service
-		
+
 	var data = {}
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -946,18 +946,18 @@ class OkResponseMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class DenyResponseMessage:
 	func _init():
 		var service
-		
+
 		__reason = PBField.new("reason", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __reason
 		data[__reason.tag] = service
-		
+
 	var data = {}
-	
+
 	var __reason: PBField
 	func has_reason() -> bool:
 		if __reason.value != null:
@@ -970,13 +970,13 @@ class DenyResponseMessage:
 		__reason.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_reason(value : String) -> void:
 		__reason.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -991,53 +991,53 @@ class DenyResponseMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class PlayerMessage:
 	func _init():
 		var service
-		
+
 		__id = PBField.new("id", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __id
 		data[__id.tag] = service
-		
+
 		__name = PBField.new("name", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __name
 		data[__name.tag] = service
-		
+
 		__x = PBField.new("x", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __x
 		data[__x.tag] = service
-		
+
 		__y = PBField.new("y", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __y
 		data[__y.tag] = service
-		
+
 		__radius = PBField.new("radius", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 5, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __radius
 		data[__radius.tag] = service
-		
+
 		__direction = PBField.new("direction", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 6, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __direction
 		data[__direction.tag] = service
-		
+
 		__speed = PBField.new("speed", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 7, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __speed
 		data[__speed.tag] = service
-		
+
 		__color = PBField.new("color", PB_DATA_TYPE.INT32, PB_RULE.OPTIONAL, 8, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT32])
 		service = PBServiceField.new()
 		service.field = __color
 		data[__color.tag] = service
-		
+
 	var data = {}
-	
+
 	var __id: PBField
 	func has_id() -> bool:
 		if __id.value != null:
@@ -1050,7 +1050,7 @@ class PlayerMessage:
 		__id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_id(value : int) -> void:
 		__id.value = value
-	
+
 	var __name: PBField
 	func has_name() -> bool:
 		if __name.value != null:
@@ -1063,7 +1063,7 @@ class PlayerMessage:
 		__name.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_name(value : String) -> void:
 		__name.value = value
-	
+
 	var __x: PBField
 	func has_x() -> bool:
 		if __x.value != null:
@@ -1076,7 +1076,7 @@ class PlayerMessage:
 		__x.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_x(value : float) -> void:
 		__x.value = value
-	
+
 	var __y: PBField
 	func has_y() -> bool:
 		if __y.value != null:
@@ -1089,7 +1089,7 @@ class PlayerMessage:
 		__y.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_y(value : float) -> void:
 		__y.value = value
-	
+
 	var __radius: PBField
 	func has_radius() -> bool:
 		if __radius.value != null:
@@ -1102,7 +1102,7 @@ class PlayerMessage:
 		__radius.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_radius(value : float) -> void:
 		__radius.value = value
-	
+
 	var __direction: PBField
 	func has_direction() -> bool:
 		if __direction.value != null:
@@ -1115,7 +1115,7 @@ class PlayerMessage:
 		__direction.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_direction(value : float) -> void:
 		__direction.value = value
-	
+
 	var __speed: PBField
 	func has_speed() -> bool:
 		if __speed.value != null:
@@ -1128,7 +1128,7 @@ class PlayerMessage:
 		__speed.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_speed(value : float) -> void:
 		__speed.value = value
-	
+
 	var __color: PBField
 	func has_color() -> bool:
 		if __color.value != null:
@@ -1141,13 +1141,13 @@ class PlayerMessage:
 		__color.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT32]
 	func set_color(value : int) -> void:
 		__color.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1162,18 +1162,18 @@ class PlayerMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class PlayerDirectionMessage:
 	func _init():
 		var service
-		
+
 		__direction = PBField.new("direction", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __direction
 		data[__direction.tag] = service
-		
+
 	var data = {}
-	
+
 	var __direction: PBField
 	func has_direction() -> bool:
 		if __direction.value != null:
@@ -1186,13 +1186,13 @@ class PlayerDirectionMessage:
 		__direction.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_direction(value : float) -> void:
 		__direction.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1207,33 +1207,33 @@ class PlayerDirectionMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class SporeMessage:
 	func _init():
 		var service
-		
+
 		__id = PBField.new("id", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __id
 		data[__id.tag] = service
-		
+
 		__x = PBField.new("x", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __x
 		data[__x.tag] = service
-		
+
 		__y = PBField.new("y", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __y
 		data[__y.tag] = service
-		
+
 		__radius = PBField.new("radius", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __radius
 		data[__radius.tag] = service
-		
+
 	var data = {}
-	
+
 	var __id: PBField
 	func has_id() -> bool:
 		if __id.value != null:
@@ -1246,7 +1246,7 @@ class SporeMessage:
 		__id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_id(value : int) -> void:
 		__id.value = value
-	
+
 	var __x: PBField
 	func has_x() -> bool:
 		if __x.value != null:
@@ -1259,7 +1259,7 @@ class SporeMessage:
 		__x.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_x(value : float) -> void:
 		__x.value = value
-	
+
 	var __y: PBField
 	func has_y() -> bool:
 		if __y.value != null:
@@ -1272,7 +1272,7 @@ class SporeMessage:
 		__y.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_y(value : float) -> void:
 		__y.value = value
-	
+
 	var __radius: PBField
 	func has_radius() -> bool:
 		if __radius.value != null:
@@ -1285,13 +1285,13 @@ class SporeMessage:
 		__radius.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_radius(value : float) -> void:
 		__radius.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1306,18 +1306,18 @@ class SporeMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class SporeConsumedMessage:
 	func _init():
 		var service
-		
+
 		__spore_id = PBField.new("spore_id", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __spore_id
 		data[__spore_id.tag] = service
-		
+
 	var data = {}
-	
+
 	var __spore_id: PBField
 	func has_spore_id() -> bool:
 		if __spore_id.value != null:
@@ -1330,13 +1330,13 @@ class SporeConsumedMessage:
 		__spore_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_spore_id(value : int) -> void:
 		__spore_id.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1351,20 +1351,20 @@ class SporeConsumedMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class SporesBatchMessage:
 	func _init():
 		var service
-		
+
 		var __spores_default: Array[SporeMessage] = []
 		__spores = PBField.new("spores", PB_DATA_TYPE.MESSAGE, PB_RULE.REPEATED, 1, true, __spores_default)
 		service = PBServiceField.new()
 		service.field = __spores
 		service.func_ref = Callable(self, "add_spores")
 		data[__spores.tag] = service
-		
+
 	var data = {}
-	
+
 	var __spores: PBField
 	func get_spores() -> Array[SporeMessage]:
 		return __spores.value
@@ -1375,13 +1375,13 @@ class SporesBatchMessage:
 		var element = SporeMessage.new()
 		__spores.value.append(element)
 		return element
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1396,18 +1396,18 @@ class SporesBatchMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class PlayerConsumedMessage:
 	func _init():
 		var service
-		
+
 		__player_id = PBField.new("player_id", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __player_id
 		data[__player_id.tag] = service
-		
+
 	var data = {}
-	
+
 	var __player_id: PBField
 	func has_player_id() -> bool:
 		if __player_id.value != null:
@@ -1420,13 +1420,13 @@ class PlayerConsumedMessage:
 		__player_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_player_id(value : int) -> void:
 		__player_id.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1441,19 +1441,19 @@ class PlayerConsumedMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class HiscoreBoardRequestMessage:
 	func _init():
 		var service
-		
+
 	var data = {}
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1468,28 +1468,28 @@ class HiscoreBoardRequestMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class HiscoreMessage:
 	func _init():
 		var service
-		
+
 		__rank = PBField.new("rank", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __rank
 		data[__rank.tag] = service
-		
+
 		__name = PBField.new("name", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __name
 		data[__name.tag] = service
-		
+
 		__score = PBField.new("score", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __score
 		data[__score.tag] = service
-		
+
 	var data = {}
-	
+
 	var __rank: PBField
 	func has_rank() -> bool:
 		if __rank.value != null:
@@ -1502,7 +1502,7 @@ class HiscoreMessage:
 		__rank.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_rank(value : int) -> void:
 		__rank.value = value
-	
+
 	var __name: PBField
 	func has_name() -> bool:
 		if __name.value != null:
@@ -1515,7 +1515,7 @@ class HiscoreMessage:
 		__name.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_name(value : String) -> void:
 		__name.value = value
-	
+
 	var __score: PBField
 	func has_score() -> bool:
 		if __score.value != null:
@@ -1528,13 +1528,13 @@ class HiscoreMessage:
 		__score.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_score(value : int) -> void:
 		__score.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1549,20 +1549,20 @@ class HiscoreMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class HiscoreBoardMessage:
 	func _init():
 		var service
-		
+
 		var __hiscores_default: Array[HiscoreMessage] = []
 		__hiscores = PBField.new("hiscores", PB_DATA_TYPE.MESSAGE, PB_RULE.REPEATED, 1, true, __hiscores_default)
 		service = PBServiceField.new()
 		service.field = __hiscores
 		service.func_ref = Callable(self, "add_hiscores")
 		data[__hiscores.tag] = service
-		
+
 	var data = {}
-	
+
 	var __hiscores: PBField
 	func get_hiscores() -> Array[HiscoreMessage]:
 		return __hiscores.value
@@ -1573,13 +1573,13 @@ class HiscoreBoardMessage:
 		var element = HiscoreMessage.new()
 		__hiscores.value.append(element)
 		return element
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1594,19 +1594,19 @@ class HiscoreBoardMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class FinishedBrowsingHiscoresMessage:
 	func _init():
 		var service
-		
+
 	var data = {}
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1621,18 +1621,18 @@ class FinishedBrowsingHiscoresMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class SearchHiscoreMessage:
 	func _init():
 		var service
-		
+
 		__name = PBField.new("name", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __name
 		data[__name.tag] = service
-		
+
 	var data = {}
-	
+
 	var __name: PBField
 	func has_name() -> bool:
 		if __name.value != null:
@@ -1645,13 +1645,13 @@ class SearchHiscoreMessage:
 		__name.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_name(value : String) -> void:
 		__name.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1666,18 +1666,18 @@ class SearchHiscoreMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class DisconnectMessage:
 	func _init():
 		var service
-		
+
 		__reason = PBField.new("reason", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
 		service.field = __reason
 		data[__reason.tag] = service
-		
+
 	var data = {}
-	
+
 	var __reason: PBField
 	func has_reason() -> bool:
 		if __reason.value != null:
@@ -1690,13 +1690,13 @@ class DisconnectMessage:
 		__reason.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_reason(value : String) -> void:
 		__reason.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1711,33 +1711,33 @@ class DisconnectMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class GameBoundsMessage:
 	func _init():
 		var service
-		
+
 		__min_x = PBField.new("min_x", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __min_x
 		data[__min_x.tag] = service
-		
+
 		__max_x = PBField.new("max_x", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __max_x
 		data[__max_x.tag] = service
-		
+
 		__min_y = PBField.new("min_y", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __min_y
 		data[__min_y.tag] = service
-		
+
 		__max_y = PBField.new("max_y", PB_DATA_TYPE.DOUBLE, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE])
 		service = PBServiceField.new()
 		service.field = __max_y
 		data[__max_y.tag] = service
-		
+
 	var data = {}
-	
+
 	var __min_x: PBField
 	func has_min_x() -> bool:
 		if __min_x.value != null:
@@ -1750,7 +1750,7 @@ class GameBoundsMessage:
 		__min_x.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_min_x(value : float) -> void:
 		__min_x.value = value
-	
+
 	var __max_x: PBField
 	func has_max_x() -> bool:
 		if __max_x.value != null:
@@ -1763,7 +1763,7 @@ class GameBoundsMessage:
 		__max_x.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_max_x(value : float) -> void:
 		__max_x.value = value
-	
+
 	var __min_y: PBField
 	func has_min_y() -> bool:
 		if __min_y.value != null:
@@ -1776,7 +1776,7 @@ class GameBoundsMessage:
 		__min_y.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_min_y(value : float) -> void:
 		__min_y.value = value
-	
+
 	var __max_y: PBField
 	func has_max_y() -> bool:
 		if __max_y.value != null:
@@ -1789,13 +1789,13 @@ class GameBoundsMessage:
 		__max_y.value = DEFAULT_VALUES_3[PB_DATA_TYPE.DOUBLE]
 	func set_max_y(value : float) -> void:
 		__max_y.value = value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -1810,132 +1810,132 @@ class GameBoundsMessage:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 class Packet:
 	func _init():
 		var service
-		
+
 		__sender_id = PBField.new("sender_id", PB_DATA_TYPE.UINT64, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64])
 		service = PBServiceField.new()
 		service.field = __sender_id
 		data[__sender_id.tag] = service
-		
+
 		__chat = PBField.new("chat", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __chat
 		service.func_ref = Callable(self, "new_chat")
 		data[__chat.tag] = service
-		
+
 		__id = PBField.new("id", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __id
 		service.func_ref = Callable(self, "new_id")
 		data[__id.tag] = service
-		
+
 		__login_request = PBField.new("login_request", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __login_request
 		service.func_ref = Callable(self, "new_login_request")
 		data[__login_request.tag] = service
-		
+
 		__register_request = PBField.new("register_request", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 5, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __register_request
 		service.func_ref = Callable(self, "new_register_request")
 		data[__register_request.tag] = service
-		
+
 		__ok_response = PBField.new("ok_response", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 6, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __ok_response
 		service.func_ref = Callable(self, "new_ok_response")
 		data[__ok_response.tag] = service
-		
+
 		__deny_response = PBField.new("deny_response", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 7, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __deny_response
 		service.func_ref = Callable(self, "new_deny_response")
 		data[__deny_response.tag] = service
-		
+
 		__player = PBField.new("player", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 8, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __player
 		service.func_ref = Callable(self, "new_player")
 		data[__player.tag] = service
-		
+
 		__player_direction = PBField.new("player_direction", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 9, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __player_direction
 		service.func_ref = Callable(self, "new_player_direction")
 		data[__player_direction.tag] = service
-		
+
 		__spore = PBField.new("spore", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 10, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __spore
 		service.func_ref = Callable(self, "new_spore")
 		data[__spore.tag] = service
-		
+
 		__spore_consumed = PBField.new("spore_consumed", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 11, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __spore_consumed
 		service.func_ref = Callable(self, "new_spore_consumed")
 		data[__spore_consumed.tag] = service
-		
+
 		__spores_batch = PBField.new("spores_batch", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 12, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __spores_batch
 		service.func_ref = Callable(self, "new_spores_batch")
 		data[__spores_batch.tag] = service
-		
+
 		__player_consumed = PBField.new("player_consumed", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 13, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __player_consumed
 		service.func_ref = Callable(self, "new_player_consumed")
 		data[__player_consumed.tag] = service
-		
+
 		__hi_score_board_request = PBField.new("hi_score_board_request", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 14, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __hi_score_board_request
 		service.func_ref = Callable(self, "new_hi_score_board_request")
 		data[__hi_score_board_request.tag] = service
-		
+
 		__hiscore = PBField.new("hiscore", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 15, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __hiscore
 		service.func_ref = Callable(self, "new_hiscore")
 		data[__hiscore.tag] = service
-		
+
 		__hiscore_board = PBField.new("hiscore_board", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 16, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __hiscore_board
 		service.func_ref = Callable(self, "new_hiscore_board")
 		data[__hiscore_board.tag] = service
-		
+
 		__finished_browsing_hiscores = PBField.new("finished_browsing_hiscores", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 17, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __finished_browsing_hiscores
 		service.func_ref = Callable(self, "new_finished_browsing_hiscores")
 		data[__finished_browsing_hiscores.tag] = service
-		
+
 		__search_hiscore = PBField.new("search_hiscore", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 18, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __search_hiscore
 		service.func_ref = Callable(self, "new_search_hiscore")
 		data[__search_hiscore.tag] = service
-		
+
 		__disconnect = PBField.new("disconnect", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 19, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __disconnect
 		service.func_ref = Callable(self, "new_disconnect")
 		data[__disconnect.tag] = service
-		
+
 		__game_bounds = PBField.new("game_bounds", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 20, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __game_bounds
 		service.func_ref = Callable(self, "new_game_bounds")
 		data[__game_bounds.tag] = service
-		
+
 	var data = {}
-	
+
 	var __sender_id: PBField
 	func has_sender_id() -> bool:
 		if __sender_id.value != null:
@@ -1948,7 +1948,7 @@ class Packet:
 		__sender_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT64]
 	func set_sender_id(value : int) -> void:
 		__sender_id.value = value
-	
+
 	var __chat: PBField
 	func has_chat() -> bool:
 		if __chat.value != null:
@@ -1999,7 +1999,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__chat.value = ChatMessage.new()
 		return __chat.value
-	
+
 	var __id: PBField
 	func has_id() -> bool:
 		if __id.value != null:
@@ -2050,7 +2050,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__id.value = IdMessage.new()
 		return __id.value
-	
+
 	var __login_request: PBField
 	func has_login_request() -> bool:
 		if __login_request.value != null:
@@ -2101,7 +2101,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__login_request.value = LoginRequestMessage.new()
 		return __login_request.value
-	
+
 	var __register_request: PBField
 	func has_register_request() -> bool:
 		if __register_request.value != null:
@@ -2152,7 +2152,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__register_request.value = RegisterRequestMessage.new()
 		return __register_request.value
-	
+
 	var __ok_response: PBField
 	func has_ok_response() -> bool:
 		if __ok_response.value != null:
@@ -2203,7 +2203,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__ok_response.value = OkResponseMessage.new()
 		return __ok_response.value
-	
+
 	var __deny_response: PBField
 	func has_deny_response() -> bool:
 		if __deny_response.value != null:
@@ -2254,7 +2254,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__deny_response.value = DenyResponseMessage.new()
 		return __deny_response.value
-	
+
 	var __player: PBField
 	func has_player() -> bool:
 		if __player.value != null:
@@ -2305,7 +2305,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__player.value = PlayerMessage.new()
 		return __player.value
-	
+
 	var __player_direction: PBField
 	func has_player_direction() -> bool:
 		if __player_direction.value != null:
@@ -2356,7 +2356,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__player_direction.value = PlayerDirectionMessage.new()
 		return __player_direction.value
-	
+
 	var __spore: PBField
 	func has_spore() -> bool:
 		if __spore.value != null:
@@ -2407,7 +2407,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__spore.value = SporeMessage.new()
 		return __spore.value
-	
+
 	var __spore_consumed: PBField
 	func has_spore_consumed() -> bool:
 		if __spore_consumed.value != null:
@@ -2458,7 +2458,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__spore_consumed.value = SporeConsumedMessage.new()
 		return __spore_consumed.value
-	
+
 	var __spores_batch: PBField
 	func has_spores_batch() -> bool:
 		if __spores_batch.value != null:
@@ -2509,7 +2509,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__spores_batch.value = SporesBatchMessage.new()
 		return __spores_batch.value
-	
+
 	var __player_consumed: PBField
 	func has_player_consumed() -> bool:
 		if __player_consumed.value != null:
@@ -2560,7 +2560,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__player_consumed.value = PlayerConsumedMessage.new()
 		return __player_consumed.value
-	
+
 	var __hi_score_board_request: PBField
 	func has_hi_score_board_request() -> bool:
 		if __hi_score_board_request.value != null:
@@ -2611,7 +2611,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__hi_score_board_request.value = HiscoreBoardRequestMessage.new()
 		return __hi_score_board_request.value
-	
+
 	var __hiscore: PBField
 	func has_hiscore() -> bool:
 		if __hiscore.value != null:
@@ -2662,7 +2662,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__hiscore.value = HiscoreMessage.new()
 		return __hiscore.value
-	
+
 	var __hiscore_board: PBField
 	func has_hiscore_board() -> bool:
 		if __hiscore_board.value != null:
@@ -2713,7 +2713,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__hiscore_board.value = HiscoreBoardMessage.new()
 		return __hiscore_board.value
-	
+
 	var __finished_browsing_hiscores: PBField
 	func has_finished_browsing_hiscores() -> bool:
 		if __finished_browsing_hiscores.value != null:
@@ -2764,7 +2764,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__finished_browsing_hiscores.value = FinishedBrowsingHiscoresMessage.new()
 		return __finished_browsing_hiscores.value
-	
+
 	var __search_hiscore: PBField
 	func has_search_hiscore() -> bool:
 		if __search_hiscore.value != null:
@@ -2815,7 +2815,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__search_hiscore.value = SearchHiscoreMessage.new()
 		return __search_hiscore.value
-	
+
 	var __disconnect: PBField
 	func has_disconnect() -> bool:
 		if __disconnect.value != null:
@@ -2866,7 +2866,7 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DisconnectMessage.new()
 		return __disconnect.value
-	
+
 	var __game_bounds: PBField
 	func has_game_bounds() -> bool:
 		if __game_bounds.value != null:
@@ -2917,13 +2917,13 @@ class Packet:
 		data[20].state = PB_SERVICE_STATE.FILLED
 		__game_bounds.value = GameBoundsMessage.new()
 		return __game_bounds.value
-	
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
-		
+
 	func to_bytes() -> PackedByteArray:
 		return PBPacker.pack_message(data)
-		
+
 	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
 		var cur_limit = bytes.size()
 		if limit != -1:
@@ -2938,5 +2938,5 @@ class Packet:
 		elif limit == -1 && result > 0:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
-	
+
 ################ USER DATA END #################

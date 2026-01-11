@@ -29,12 +29,10 @@ func (h *Hub) replenishSporesLoop(rate time.Duration) {
 
 		log.Printf("%d spores remain - going to replenish %d spores", sporesRemaining, diff)
 
-		// Don't spawn too many at a time
 		for i := 0; i < min(diff, 10); i++ {
 			spore := h.newSpore()
 			sporeId := h.SharedGameObjects.Spores.Add(spore)
 
-			// Non-blocking send to avoid deadlock
 			packet := &packets.Packet{
 				SenderId: 0,
 				Msg:      packets.NewSpore(sporeId, spore),
@@ -45,7 +43,6 @@ func (h *Hub) replenishSporesLoop(rate time.Duration) {
 				log.Printf("BroadcastChan full, dropping spore spawn notification for spore %d", sporeId)
 			}
 
-			// sleep to avoid lag spikes
 			time.Sleep(50 * time.Millisecond)
 		}
 	}
@@ -64,7 +61,6 @@ var schemaGenSql string
 
 const MaxSpores int = 1000
 
-// Struct for database transaction context
 type DbTx struct {
 	Ctx     context.Context
 	Queries *db.Queries
@@ -160,7 +156,6 @@ func NewHub(databaseURL string) *Hub {
 	}
 
 	// Configure PostgreSQL connection pool
-	// PostgreSQL handles concurrent connections much better than SQLite
 	dbPool.SetMaxOpenConns(25)      // Maximum number of open connections
 	dbPool.SetMaxIdleConns(5)       // Maximum number of idle connections
 	dbPool.SetConnMaxLifetime(5 * time.Minute) // Maximum connection lifetime
@@ -223,13 +218,13 @@ func (h *Hub) monitorChannelHealth() {
 		registerLen := len(h.RegisterChan)
 		unregisterLen := len(h.UnregisterChan)
 
-		if broadcastLen > 1500 { // 75% of 2000
+		if broadcastLen > 1500 {
 			log.Printf("WARNING: BroadcastChan is %d/2000 (%.1f%% full)", broadcastLen, float64(broadcastLen)/20.0)
 		}
-		if registerLen > 75 { // 75% of 100
+		if registerLen > 75 {=
 			log.Printf("WARNING: RegisterChan is %d/100 full", registerLen)
 		}
-		if unregisterLen > 75 { // 75% of 100
+		if unregisterLen > 75 {
 			log.Printf("WARNING: UnregisterChan is %d/100 full", unregisterLen)
 		}
 	}

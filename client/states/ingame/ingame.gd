@@ -63,13 +63,13 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 	var radius := player_msg.get_radius()
 	var speed := player_msg.get_speed()
 	var color_hex := player_msg.get_color()
-	
+
 	var color := Color.hex(color_hex)
 	var is_player := actor_id == GameManager.client_id
-	
+
 	if actor_id not in _players:
 		_add_actor(actor_id, actor_name, x, y, radius, speed, color, is_player)
-		
+
 	else:
 		var direction := player_msg.get_direction()
 		_update_actor(actor_id, x, y, direction, speed, radius, is_player)
@@ -81,19 +81,17 @@ func _add_actor(actor_id: int, actor_name: String, x: float, y: float, radius: f
 	actor.z_index = 1
 	_set_actor_mass(actor, _rad_to_mass(radius))
 	_players[actor_id] = actor
-	
+
 	if is_player:
 		actor.area_entered.connect(_on_player_area_entered)
-		
-		
+
+
 func _update_actor(actor_id: int, x: float, y: float, direction: float, speed: float, radius: float, is_player: bool) -> void:
 	var actor := _players[actor_id]
 	_set_actor_mass(actor, _rad_to_mass(radius))
 	actor.radius = radius
 
 	var server_position := Vector2(x, y)
-	# Always update server position for the player to prevent drift at boundaries
-	# For other actors, only update if significantly far to reduce jitter
 	if is_player or actor.position.distance_squared_to(server_position) > 50:
 		actor.server_position = server_position
 
@@ -107,24 +105,24 @@ func _handle_spore_msg(sender_id: int, spore_msg: packets.SporeMessage) -> void:
 	var y := spore_msg.get_y()
 	var radius := spore_msg.get_radius()
 	var underneath_player := false
-	
+
 	if GameManager.client_id in _players:
 		var player := _players[GameManager.client_id]
 		var player_pos := Vector2(player.position.x, player.position.y)
 		var spore_pos := Vector2(x, y)
 		underneath_player = player_pos.distance_squared_to(spore_pos) < player.radius * player.radius
-	
+
 	if spore_id not in _spores:
 		var spore := Spore.instantiate(spore_id, x, y, radius, underneath_player)
 		world.add_child(spore)
 		_spores[spore_id] = spore
-		
+
 
 func _handle_spore_consumed_msg(sender_id: int, spore_consumed_msg: packets.SporeConsumedMessage) -> void:
 	if sender_id in _players:
 		var actor := _players[sender_id]
 		var actor_mass := _rad_to_mass(actor.radius)
-		
+
 		var spore_id := spore_consumed_msg.get_spore_id()
 		if spore_id in _spores:
 			var spore := _spores[spore_id]
@@ -134,56 +132,54 @@ func _handle_spore_consumed_msg(sender_id: int, spore_consumed_msg: packets.Spor
 
 func _rad_to_mass(radius: float) -> float:
 	return radius * radius * PI
-	
-	
+
+
 func _set_actor_mass(actor: Actor, new_mass: float) -> void:
 	actor.radius = sqrt(new_mass / PI)
 	hiscores.set_hiscore(actor.actor_name, roundi(new_mass))
 
-		
+
 func _consume_spore(spore: Spore) -> void:
 	if spore.underneath_player:
 		return
-	
+
 	var player := _players[GameManager.client_id]
 	var player_mass := _rad_to_mass(player.radius)
 	var spore_mass := _rad_to_mass(spore.radius)
 	_set_actor_mass(player, player_mass + spore_mass)
-	
+
 	var packet := packets.Packet.new()
 	var spore_consumed_msg := packet.new_spore_consumed()
 	spore_consumed_msg.set_spore_id(spore.spore_id)
 	WS.send(packet)
 	_remove_spore(spore)
-	
-	
+
+
 func _remove_spore(spore: Spore) -> void:
 	_spores.erase(spore.spore_id)
 	spore.queue_free()
-	
-	
+
+
 func _handle_spores_batch_msg(sender_id: int, spores_batch_msg: packets.SporesBatchMessage) -> void:
 	for spore_msg in spores_batch_msg.get_spores():
 		_handle_spore_msg(sender_id, spore_msg)
-		
-		
+
+
 func _handle_disconnect_msg(sender_id: int, disconnect_msg: packets.DisconnectMessage) -> void:
 	var reason := disconnect_msg.get_reason()
 
-	# If we received our own disconnect message, cleanup and return to menu
 	if sender_id == GameManager.client_id:
 		_log.info("Disconnected: %s" % reason)
 		_cleanup()
 		GameManager.set_state(GameManager.State.ENTERED)
 		return
 
-	# Otherwise it's another player disconnecting
 	if sender_id in _players:
 		var player := _players[sender_id]
 		_log.info("%s disconnected because %s" % [player.actor_name, reason])
 		_remove_actor(player)
 
-	
+
 func _on_line_edit_gui_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ENTER:
 		if _line_edit.text.strip_edges() != "":
@@ -202,15 +198,15 @@ func _on_line_edit_text_entered(text: String) -> void:
 	else:
 		_log.chat("You", text)
 	_line_edit.text = ""
-	
-	
+
+
 func _on_player_area_entered(area: Area2D) -> void:
 	if area is Spore:
 		_consume_spore(area as Spore)
 	elif area is Actor:
 		_collide_actor(area as Actor)
-		
-		
+
+
 func _on_logout_button_pressed() -> void:
 	var packet := packets.Packet.new()
 	var disconnect_msg := packet.new_disconnect()
@@ -221,43 +217,41 @@ func _on_logout_button_pressed() -> void:
 
 
 func _cleanup() -> void:
-	# Explicitly free all spores and players before transitioning state
-	# This prevents memory buildup when disconnecting with high scores
 	for spore in _spores.values():
-		spore.free()  # Immediate deletion instead of queue_free()
+		spore.free()
 	_spores.clear()
 
 	for player in _players.values():
-		player.free()  # Immediate deletion instead of queue_free()
+		player.free()
 	_players.clear()
-		
-		
+
+
 func _on_send_button_pressed() -> void:
 	_on_line_edit_text_entered(_line_edit.text)
-	
-	
+
+
 func _collide_actor(actor: Actor) -> void:
 	var player := _players[GameManager.client_id]
 	var player_mass := _rad_to_mass(player.radius)
 	var actor_mass := _rad_to_mass(actor.radius)
-	
+
 	if player_mass > actor_mass * 1.5:
 		_consume_actor(actor)
-		
-		
+
+
 func _consume_actor(actor: Actor) -> void:
 	var player := _players[GameManager.client_id]
 	var player_mass := _rad_to_mass(player.radius)
 	var actor_mass := _rad_to_mass(actor.radius)
 	_set_actor_mass(player, player_mass + actor_mass)
-	
+
 	var packet := packets.Packet.new()
 	var player_consumed_msg := packet.new_player_consumed()
 	player_consumed_msg.set_player_id(actor.actor_id)
 	WS.send(packet)
 	_remove_actor(actor)
-	
-	
+
+
 func _remove_actor(actor: Actor) -> void:
 	_players.erase(actor.actor_id)
 	actor.queue_free()
@@ -265,7 +259,6 @@ func _remove_actor(actor: Actor) -> void:
 
 
 func _handle_game_bounds_msg(sender_id: int, bounds_msg: packets.GameBoundsMessage) -> void:
-	# Update the global game boundaries from the server
 	GameManager.bounds_min_x = bounds_msg.get_min_x()
 	GameManager.bounds_max_x = bounds_msg.get_max_x()
 	GameManager.bounds_min_y = bounds_msg.get_min_y()

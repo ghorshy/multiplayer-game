@@ -21,7 +21,7 @@ var radius: float:
 		collision_shape_2d.set_radius(radius)
 		_update_zoom()
 		queue_redraw()
-		
+
 var target_zoom := 2.0
 var furthest_zoom_allowed := target_zoom
 var server_position: Vector2
@@ -44,7 +44,7 @@ static func instantiate(actor_id: int, actor_name: String, x: float, y: float, r
 	actor.speed = speed
 	actor.color = color
 	actor.is_player = is_player
-	
+
 	return actor
 
 
@@ -55,7 +55,7 @@ func _input(event: InputEvent) -> void:
 				target_zoom = min(4, target_zoom + 0.1)
 			MOUSE_BUTTON_WHEEL_DOWN:
 				target_zoom = max(furthest_zoom_allowed, target_zoom - 0.1)
-				
+
 		camera_2d.zoom.y = camera_2d.zoom.x
 
 
@@ -70,7 +70,6 @@ func _ready() -> void:
 	label.text = actor_name
 	time_offset = randf() * TAU  # Random phase offset for each actor
 
-	# Only apply shader to other players, not the local player
 	if not is_player:
 		var shader = load("res://objects/actor/floaty.gdshader")
 		shader_material = ShaderMaterial.new()
@@ -78,31 +77,25 @@ func _ready() -> void:
 		shader_material.set_shader_parameter("phase_offset", time_offset)
 		shader_material.set_shader_parameter("random_seed", randf() * 1000.0)
 		material = shader_material
-	
-	
+
+
 func _process(_delta: float) -> void:
 	if not is_equal_approx(camera_2d.zoom.x, target_zoom):
 		camera_2d.zoom -= Vector2(1, 1) * (camera_2d.zoom.x - target_zoom) * 0.05
 
-	
+
 func _physics_process(delta: float) -> void:
-	# Only update visual position with velocity for smooth local movement
 	var new_pos := position + velocity * delta
 
-	# Rubber-band boundary enforcement
-	# Creates a soft wall that pushes back with increasing force
 	var buffer := radius
-	var rubber_band_zone := 200.0  # Distance from boundary where rubber-band starts
+	var rubber_band_zone := 200.0
 
-	# X-axis rubber-banding
 	var min_x_bound := GameManager.bounds_min_x + buffer
 	var max_x_bound := GameManager.bounds_max_x - buffer
 
 	if new_pos.x < min_x_bound:
-		# Hard clamp at boundary
 		new_pos.x = min_x_bound
 	elif new_pos.x < min_x_bound + rubber_band_zone:
-		# Soft zone: apply resistance
 		var distance_into_boundary := min_x_bound + rubber_band_zone - new_pos.x
 		var resistance := distance_into_boundary / rubber_band_zone  # 0 to 1
 		var push_back := resistance * resistance * speed * delta * 2.0
@@ -116,7 +109,6 @@ func _physics_process(delta: float) -> void:
 		var push_back := resistance * resistance * speed * delta * 2.0
 		new_pos.x -= push_back
 
-	# Y-axis rubber-banding
 	var min_y_bound := GameManager.bounds_min_y + buffer
 	var max_y_bound := GameManager.bounds_max_y - buffer
 
@@ -138,14 +130,11 @@ func _physics_process(delta: float) -> void:
 
 	position = new_pos
 
-	# Smoothly interpolate toward server-authoritative position
-	# server_position is ONLY updated by server messages, not predicted locally
 	position += (server_position - position) * 0.05
 
 	if not is_player:
 		return
 
-	# Player-specific stuff
 	var mouse_pos := get_global_mouse_position()
 
 	var input_vec := position.direction_to(mouse_pos).normalized()
@@ -159,15 +148,15 @@ func _physics_process(delta: float) -> void:
 
 func _draw() -> void:
 	draw_circle(Vector2.ZERO, collision_shape_2d.radius, color)
-	
-	
+
+
 func _update_zoom() -> void:
 	if is_node_ready():
 		label.add_theme_font_size_override("font_size", max(16, radius / 2))
-	
+
 	if not is_player:
 		return
-		
+
 	var new_furthest_zoom_allowed := 2 * start_rad / radius
 	if is_equal_approx(target_zoom, furthest_zoom_allowed):
 		target_zoom = new_furthest_zoom_allowed
